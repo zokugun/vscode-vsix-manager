@@ -2,11 +2,11 @@ import path from 'path';
 import fse from 'fs-extra';
 import vscode from 'vscode';
 import { CONFIG_KEY, EXTENSION_ID, getDebugChannel, GLOBAL_STORAGE, TEMPORARY_DIR } from '../settings';
-import { installMarketplace } from '../sources/marketplace';
+import { installMarketplace, updateMarketplace } from '../sources/marketplace';
 import { listExtensions } from '../utils/list-extensions';
 import { ExtensionList, Source } from '../utils/types';
 
-export async function installExtensions(): Promise<void> {
+export async function installExtensions(update: boolean = false): Promise<void> {
 	const config = vscode.workspace.getConfiguration(CONFIG_KEY);
 	const debug = config.get<boolean>('debug') ?? false;
 	const debugChannel = getDebugChannel(debug);
@@ -29,7 +29,7 @@ export async function installExtensions(): Promise<void> {
 
 	for(const extension of extensions) {
 		try {
-			await installExtension(extension, sources, groups, editorExtensions, managedExtensions, installedExtensions, debugChannel);
+			await installExtension(extension, sources, groups, editorExtensions, managedExtensions, installedExtensions, debugChannel, update);
 		}
 		catch (error: unknown) {
 			debugChannel?.appendLine(String(error));
@@ -49,7 +49,7 @@ export async function installExtensions(): Promise<void> {
 	await fse.writeJSON(extensionsFileName, managedExtensions);
 }
 
-async function installExtension(extension: string, sources: Record<string, Source> | undefined, groups: Record<string, string[]> | undefined, editorExtensions: ExtensionList, managedExtensions: Record<string, string>, installedExtensions: Record<string, string>, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
+async function installExtension(extension: string, sources: Record<string, Source> | undefined, groups: Record<string, string[]> | undefined, editorExtensions: ExtensionList, managedExtensions: Record<string, string>, installedExtensions: Record<string, string>, debugChannel: vscode.OutputChannel | undefined, update: boolean): Promise<void> { // {{{
 	debugChannel?.appendLine(`installing extension: ${extension}`);
 
 	if(extension.includes(':')) {
@@ -71,13 +71,27 @@ async function installExtension(extension: string, sources: Record<string, Sourc
 		}
 
 		if(editorExtensions.disabled.includes(extensionName) || editorExtensions.enabled.includes(extensionName)) {
-			const version = managedExtensions[extensionName];
-			if(version) {
-				installedExtensions[extensionName] = version;
-			}
+			const currentVersion = managedExtensions[extensionName];
 
-			debugChannel?.appendLine('already installed');
-			return;
+			if(update && currentVersion) {
+				const version = await updateMarketplace(extensionName, currentVersion, source, TEMPORARY_DIR, debugChannel);
+				if(version) {
+					installedExtensions[extensionName] = version;
+
+					debugChannel?.appendLine(`updated to version: ${version}`);
+				}
+				else {
+					debugChannel?.appendLine('no newer version found');
+				}
+			}
+			else {
+				if(currentVersion) {
+					installedExtensions[extensionName] = currentVersion;
+				}
+
+				debugChannel?.appendLine('already installed');
+				return;
+			}
 		}
 
 		if(source.kind === 'marketplace') {
@@ -103,11 +117,11 @@ async function installExtension(extension: string, sources: Record<string, Sourc
 		debugChannel?.appendLine('installed');
 	}
 	else {
-		await installGroup(extension, sources, groups, editorExtensions, managedExtensions, installedExtensions, debugChannel);
+		await installGroup(extension, sources, groups, editorExtensions, managedExtensions, installedExtensions, debugChannel, update);
 	}
 } // }}}
 
-async function installGroup(groupName: string, sources: Record<string, Source> | undefined, groups: Record<string, string[]> | undefined, editorExtensions: ExtensionList, managedExtensions: Record<string, string>, installedExtensions: Record<string, string>, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
+async function installGroup(groupName: string, sources: Record<string, Source> | undefined, groups: Record<string, string[]> | undefined, editorExtensions: ExtensionList, managedExtensions: Record<string, string>, installedExtensions: Record<string, string>, debugChannel: vscode.OutputChannel | undefined, update: boolean): Promise<void> { // {{{
 	debugChannel?.appendLine(`installing group: ${groupName}`);
 	if(!groups) {
 		debugChannel?.appendLine('no groups');
@@ -122,7 +136,7 @@ async function installGroup(groupName: string, sources: Record<string, Source> |
 
 	for(const extension of extensions) {
 		try {
-			await installExtension(extension, sources, groups, editorExtensions, managedExtensions, installedExtensions, debugChannel);
+			await installExtension(extension, sources, groups, editorExtensions, managedExtensions, installedExtensions, debugChannel, update);
 		}
 		catch (error: unknown) {
 			debugChannel?.appendLine(String(error));

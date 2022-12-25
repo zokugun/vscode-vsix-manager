@@ -101,6 +101,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<VSIXMa
 	});
 
 	return {
+		installExtensions,
 		listManagedExtensions,
 	};
 } // }}}

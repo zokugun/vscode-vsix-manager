@@ -16,5 +16,6 @@ export type MarketPlace = {
 export type Source = MarketPlace;
 
 export type VSIXManager = {
+	installExtensions(update?: boolean): Promise<void>;
 	listManagedExtensions(): Promise<string[]>;
 };
