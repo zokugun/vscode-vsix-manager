@@ -76,6 +76,7 @@ Commands
 --------
 
 - `> VSIX Manager: Install extensions`: install the extensions
+- `> VSIX Manager: Unnstall extensions`: uninstall the extensions
 - `> VSIX Manager: Update extensions`: update the extensions
 
 Crons
@@ -89,10 +90,10 @@ Crons
 }
 ```
 
-Enabled
--------
+applyChanges
+------------
 
-With `vsix.enabled` (`true` by default), you can control whether the extensions are installed or not.
+With `vsix.applyChanges` (`true` by default), you can control whether whether the changes are immediately applied or not.
 
 Debugging
 ---------

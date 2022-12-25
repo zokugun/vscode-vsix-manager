@@ -78,6 +78,11 @@
 				"category": "VSIX Manager"
 			},
 			{
+				"command": "vsix.uninstallExtensions",
+				"title": "Uninstall extensions",
+				"category": "VSIX Manager"
+			},
+			{
 				"command": "vsix.updateExtensions",
 				"title": "Update extensions",
 				"category": "VSIX Manager"
@@ -86,6 +91,15 @@
 		"configuration": {
 			"title": "VSIX Manager",
 			"properties": {
+				"vsix.applyChanges": {
+					"type": "boolean",
+					"description": "Controls whether the changes are immediately applied or not",
+					"default": true,
+					"scope": "application",
+					"tags": [
+						"vsix"
+					]
+				},
 				"vsix.crons": {
 					"type": "object",
 					"description": "Automate some commands",
@@ -106,15 +120,6 @@
 					"type": "boolean",
 					"description": "Output debug logs",
 					"default": false,
-					"scope": "application",
-					"tags": [
-						"vsix"
-					]
-				},
-				"vsix.enabled": {
-					"type": "boolean",
-					"description": "Controls whether the extensions are installed or not",
-					"default": true,
 					"scope": "application",
 					"tags": [
 						"vsix"

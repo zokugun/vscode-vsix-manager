@@ -1,6 +1,7 @@
 import vscode from 'vscode';
 import pkg from '../package.json';
 import { installExtensions } from './commands/install-extensions';
+import { uninstallExtensions } from './commands/uninstall-extensions';
 import { updateExtensions } from './commands/update-extensions';
 import { setupCrons } from './crons';
 import { CONFIG_KEY, setupSettings } from './settings';
@@ -11,9 +12,9 @@ const VERSION_KEY = 'version';
 
 function setup(): void { // {{{
 	const config = vscode.workspace.getConfiguration(CONFIG_KEY);
-	const enabled = config.get<boolean>('enabled', true);
+	const applyChanges = config.get<boolean>('applyChanges', true);
 
-	if(enabled) {
+	if(applyChanges) {
 		setTimeout(installExtensions, 150);
 	}
 } // }}}
@@ -81,6 +82,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<VSIXMa
 
 	disposables.push(
 		vscode.commands.registerCommand('vsix.installExtensions', installExtensions),
+		vscode.commands.registerCommand('vsix.uninstallExtensions', uninstallExtensions),
 		vscode.commands.registerCommand('vsix.updateExtensions', updateExtensions),
 	);
 
