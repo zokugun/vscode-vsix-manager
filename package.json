@@ -1,0 +1,229 @@
+{
+	"name": "vsix-manager",
+	"displayName": "VSIX Manager",
+	"description": "Install extensions from your own sources",
+	"version": "0.0.0",
+	"author": {
+		"name": "Baptiste Augrain",
+		"email": "daiyam@zokugun.org"
+	},
+	"publisher": "zokugun",
+	"license": "MIT",
+	"homepage": "https://github.com/zokugun/vscode-vsix-manager",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/zokugun/vscode-vsix-manager.git"
+	},
+	"bugs": {
+		"url": "https://github.com/zokugun/vscode-vsix-manager/issues"
+	},
+	"engines": {
+		"vscode": "^1.23.0"
+	},
+	"main": "./lib/index.js",
+	"browser": "./lib/index.js",
+	"scripts": {
+		"bundle": "ncc build out/extension --out lib",
+		"commit": "cz",
+		"compile": "tsc -p src",
+		"lint": "xo",
+		"package": "rm -f *.vsix && vsce package",
+		"prepare": "husky install; fixpack || true",
+		"release": "release-it",
+		"vscode:prepublish": "npm run compile && npm run bundle",
+		"watch": "tsc-watch -p src --onSuccess 'npm run bundle'"
+	},
+	"dependencies": {
+		"fs-extra": "^10.0.1",
+		"globby": "^11.1.0",
+		"got": "^11.8.6",
+		"semver": "^7.3.5"
+	},
+	"devDependencies": {
+		"@commitlint/cli": "^17.0.3",
+		"@commitlint/config-conventional": "^17.0.3",
+		"@types/fs-extra": "^9.0.12",
+		"@types/node": "^16.11.45",
+		"@types/semver": "^7.3.8",
+		"@types/vscode": "^1.23.0",
+		"@vercel/ncc": "^0.34.0",
+		"commitizen": "^4.2.5",
+		"fixpack": "^4.0.0",
+		"husky": "^8.0.1",
+		"lint-staged": "^13.0.3",
+		"release-it": "^15.3.0",
+		"tsc-watch": "^5.0.3",
+		"typescript": "^4.2.4",
+		"xo": "^0.48.0"
+	},
+	"extensionDependencies": [
+		"zokugun.cron-tasks"
+	],
+	"activationEvents": [
+		"onStartupFinished",
+		"onCommand:vsix.installExtensions",
+		"onCommand:vsix.updateExtensions"
+	],
+	"capabilities": {
+		"virtualWorkspaces": true,
+		"untrustedWorkspaces": {
+			"supported": true
+		}
+	},
+	"contributes": {
+		"commands": [
+			{
+				"command": "vsix.installExtensions",
+				"title": "Install extensions",
+				"category": "VSIX Manager"
+			},
+			{
+				"command": "vsix.updateExtensions",
+				"title": "Update extensions",
+				"category": "VSIX Manager"
+			}
+		],
+		"configuration": {
+			"title": "VSIX Manager",
+			"properties": {
+				"vsix.crons": {
+					"type": "object",
+					"description": "Automate some commands",
+					"properties": {
+						"update": {
+							"type": "string",
+							"description": "Automatically update the extensions at the specified time",
+							"default": ""
+						}
+					},
+					"default": {},
+					"scope": "application",
+					"tags": [
+						"vsix"
+					]
+				},
+				"vsix.debug": {
+					"type": "boolean",
+					"description": "Output debug logs",
+					"default": false,
+					"scope": "application",
+					"tags": [
+						"vsix"
+					]
+				},
+				"vsix.enabled": {
+					"type": "boolean",
+					"description": "Controls whether the extensions are installed or not",
+					"default": true,
+					"scope": "application",
+					"tags": [
+						"vsix"
+					]
+				},
+				"vsix.extensions": {
+					"type": "array",
+					"description": "List of extension IDs or groups to install",
+					"items": [
+						{
+							"type": "string"
+						}
+					],
+					"default": [],
+					"scope": "application",
+					"uniqueItems": true,
+					"tags": [
+						"vsix"
+					]
+				},
+				"vsix.groups": {
+					"type": "object",
+					"description": "Map of groups",
+					"items": [
+						{
+							"type": "array",
+							"description": "List of extension IDs or groups to install",
+							"items": [
+								{
+									"type": "string"
+								}
+							]
+						}
+					],
+					"default": {},
+					"scope": "application",
+					"uniqueItems": true,
+					"tags": [
+						"vsix"
+					]
+				},
+				"vsix.notification": {
+					"type": "string",
+					"description": "Display notification when a new version is installed",
+					"default": "minor",
+					"enum": [
+						"none",
+						"major",
+						"minor",
+						"patch"
+					],
+					"enumDescriptions": [
+						"The new version notification won't be shown anymore",
+						"The new version notification will be shown only with a new major version",
+						"The new version notification will be shown only with a new minor version",
+						"The new version notification will always be shown"
+					],
+					"scope": "application",
+					"tags": [
+						"vsix"
+					]
+				},
+				"vsix.sources": {
+					"type": "object",
+					"description": "Map of sources from which to find the VSIX files",
+					"items": [
+						{
+							"type": "object",
+							"description": "A marketplace",
+							"properties": {
+								"kind": {
+									"type": "string",
+									"default": "marketplace",
+									"enum": [
+										"marketplace"
+									]
+								},
+								"serviceUrl": {
+									"type": "string",
+									"description": "The url of the service API"
+								}
+							}
+						}
+					],
+					"default": {},
+					"scope": "application",
+					"uniqueItems": true,
+					"tags": [
+						"vsix"
+					]
+				}
+			}
+		}
+	},
+	"icon": "icon.png",
+	"galleryBanner": {
+		"color": "#ffffff",
+		"theme": "light"
+	},
+	"categories": [
+		"Other"
+	],
+	"keywords": [
+		"extension",
+		"marketplace",
+		"vsix"
+	],
+	"extensionKind": [
+		"ui",
+		"workspace"
+	]
+}

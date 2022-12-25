@@ -1,0 +1,9 @@
+{
+	"taskExplorer.exclude": [
+		".husky",
+	],
+	"search.exclude": {
+		"lib/**": true,
+		"out/**": true,
+	}
+}

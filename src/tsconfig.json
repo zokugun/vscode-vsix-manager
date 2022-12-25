@@ -1,0 +1,16 @@
+{
+	"extends": "../tsconfig.base.json",
+	"compilerOptions": {
+		/* Basic Options */
+		"outDir": "../out",								/* Specify an output folder for all emitted files. */
+		"rootDir": ".",									/* Specify the root directory of input files. */
+
+		/* Module Resolution Options */
+		"resolveJsonModule": true,						/* Enable importing .json files */
+	},
+	"references": [
+		{
+			"path": ".."
+		}
+	],
+}

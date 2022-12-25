@@ -1,0 +1,33 @@
+{
+	"sortToTop": [
+		"name",
+		"displayName",
+		"description",
+		"version",
+		"private",
+		"author",
+		"publisher",
+		"license",
+		"homepage",
+		"repository",
+		"bugs",
+		"engines",
+		"bin",
+		"main",
+		"browser",
+		"types",
+		"scripts",
+		"dependencies",
+		"devDependencies",
+		"optionalDependencies",
+		"extensionDependencies",
+		"activationEvents",
+		"capabilities",
+		"contributes",
+		"icon",
+		"galleryBanner",
+		"categories",
+		"keywords"
+	],
+	"finalNewLine": true
+}
