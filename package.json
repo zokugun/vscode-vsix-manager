@@ -211,8 +211,8 @@
 	},
 	"icon": "icon.png",
 	"galleryBanner": {
-		"color": "#ffffff",
-		"theme": "light"
+		"color": "#303B45",
+		"theme": "dark"
 	},
 	"categories": [
 		"Other"
