@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.3.1 | 2022-12-25
+- correctly updating extensions when installing
+
 ## v0.3.0 | 2022-12-25
 - correctly generate installed extensions list
 - rename `vsix.enabled` flag as `vsix.applyChanges`
