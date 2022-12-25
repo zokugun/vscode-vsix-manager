@@ -4,6 +4,8 @@ import { installExtensions } from './commands/install-extensions';
 import { updateExtensions } from './commands/update-extensions';
 import { setupCrons } from './crons';
 import { CONFIG_KEY, setupSettings } from './settings';
+import { listManagedExtensions } from './utils/list-managed-extensions';
+import { VSIXManager } from './utils/types';
 
 const VERSION_KEY = 'version';
 
@@ -44,7 +46,7 @@ async function showWhatsNewMessage(version: string) { // {{{
 	}
 } // }}}
 
-export async function activate(context: vscode.ExtensionContext): Promise<void> { // {{{
+export async function activate(context: vscode.ExtensionContext): Promise<VSIXManager> { // {{{
 	await setupSettings(context);
 
 	const previousVersion = context.globalState.get<string>(VERSION_KEY);
@@ -97,4 +99,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 			await setupCrons();
 		}
 	});
+
+	return {
+		listManagedExtensions,
+	};
 } // }}}

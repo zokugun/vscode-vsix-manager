@@ -1,3 +1,12 @@
+export type ExtensionList = {
+	builtin?: {
+		disabled?: string[];
+		enabled?: string[];
+	};
+	disabled: string[];
+	enabled: string[];
+};
+
 export type MarketPlace = {
 	kind: 'marketplace';
 	serviceUrl: string;
@@ -6,11 +15,6 @@ export type MarketPlace = {
 
 export type Source = MarketPlace;
 
-export type ExtensionList = {
-	builtin?: {
-		disabled?: string[];
-		enabled?: string[];
-	};
-	disabled: string[];
-	enabled: string[];
+export type VSIXManager = {
+	listManagedExtensions(): Promise<string[]>;
 };
