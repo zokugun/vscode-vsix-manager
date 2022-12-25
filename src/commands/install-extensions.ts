@@ -85,6 +85,8 @@ async function installExtension(extension: string, sources: Record<string, Sourc
 					debugChannel?.appendLine(`updated to version: ${version}`);
 				}
 				else {
+					installedExtensions[extensionName] = currentVersion;
+
 					debugChannel?.appendLine('no newer version found');
 				}
 			}
@@ -94,8 +96,9 @@ async function installExtension(extension: string, sources: Record<string, Sourc
 				}
 
 				debugChannel?.appendLine('already installed');
-				return;
 			}
+
+			return;
 		}
 
 		if(source.kind === 'marketplace') {
