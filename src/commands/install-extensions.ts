@@ -11,6 +11,10 @@ export async function installExtensions(update: boolean = false): Promise<void> 
 	const debug = config.get<boolean>('debug') ?? false;
 	const debugChannel = getDebugChannel(debug);
 
+	if(debugChannel) {
+		debugChannel.show(true);
+	}
+
 	const extensions = config.get<string[]>('extensions');
 	if(!extensions) {
 		return;
@@ -46,7 +50,7 @@ export async function installExtensions(update: boolean = false): Promise<void> 
 		}
 	}
 
-	await fse.writeJSON(extensionsFileName, managedExtensions);
+	await fse.writeJSON(extensionsFileName, installedExtensions);
 }
 
 async function installExtension(extension: string, sources: Record<string, Source> | undefined, groups: Record<string, string[]> | undefined, editorExtensions: ExtensionList, managedExtensions: Record<string, string>, installedExtensions: Record<string, string>, debugChannel: vscode.OutputChannel | undefined, update: boolean): Promise<void> { // {{{

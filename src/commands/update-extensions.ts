@@ -10,6 +10,10 @@ export async function updateExtensions(): Promise<void> {
 	const debug = config.get<boolean>('debug') ?? false;
 	const debugChannel = getDebugChannel(debug);
 
+	if(debugChannel) {
+		debugChannel.show(true);
+	}
+
 	const extensions = config.get<string[]>('extensions');
 	if(!extensions) {
 		return;
