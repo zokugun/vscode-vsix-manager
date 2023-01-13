@@ -7,6 +7,11 @@ export type ExtensionList = {
 	enabled: string[];
 };
 
+export type FileSystem = {
+	type: 'file';
+	path: string;
+};
+
 export type MarketPlaceOld = {
 	kind: 'marketplace';
 	serviceUrl: string;
@@ -19,7 +24,7 @@ export type MarketPlace = {
 	itemUrl: string;
 };
 
-export type Source = MarketPlace;
+export type Source = FileSystem | MarketPlace;
 
 export type VSIXManager = {
 	installExtensions(update?: boolean): Promise<void>;

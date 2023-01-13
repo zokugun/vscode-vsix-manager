@@ -37,7 +37,8 @@
 		"fs-extra": "^10.0.1",
 		"globby": "^11.1.0",
 		"got": "^11.8.6",
-		"semver": "^7.3.5"
+		"semver": "^7.3.5",
+		"untildify": "^4.0.0"
 	},
 	"devDependencies": {
 		"@commitlint/cli": "^17.0.3",
@@ -188,14 +189,19 @@
 					"items": [
 						{
 							"type": "object",
-							"description": "A marketplace",
+							"description": "A source",
 							"properties": {
 								"type": {
 									"type": "string",
 									"default": "marketplace",
 									"enum": [
+										"file",
 										"marketplace"
 									]
+								},
+								"path": {
+									"type": "string",
+									"description": "The path of the directory where the extensions are stored"
 								},
 								"serviceUrl": {
 									"type": "string",

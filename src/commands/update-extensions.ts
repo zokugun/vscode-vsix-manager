@@ -2,7 +2,7 @@ import path from 'path';
 import fse from 'fs-extra';
 import vscode from 'vscode';
 import { CONFIG_KEY, getDebugChannel, GLOBAL_STORAGE, TEMPORARY_DIR } from '../settings';
-import { updateMarketplace } from '../sources/marketplace';
+import { dispatchUpdate } from '../utils/dispatch-update';
 import { listSources } from '../utils/list-sources';
 import { Source } from '../utils/types';
 
@@ -68,16 +68,14 @@ async function updateExtension(extension: string, sources: Record<string, Source
 			return;
 		}
 
-		if(source.type === 'marketplace') {
-			const version = await updateMarketplace(extensionName, currentVersion, source, TEMPORARY_DIR, debugChannel);
-			if(version) {
-				managedExtensions[extensionName] = version;
+		const version = await dispatchUpdate(extensionName, currentVersion, source, TEMPORARY_DIR, debugChannel);
+		if(version) {
+			managedExtensions[extensionName] = version;
 
-				debugChannel?.appendLine(`updated to version: ${version}`);
-			}
-			else {
-				debugChannel?.appendLine('no newer version found');
-			}
+			debugChannel?.appendLine(`updated to version: ${version}`);
+		}
+		else {
+			debugChannel?.appendLine('no newer version found');
 		}
 	}
 	else if(extension.includes('.')) {

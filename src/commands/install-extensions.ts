@@ -2,7 +2,8 @@ import path from 'path';
 import fse from 'fs-extra';
 import vscode from 'vscode';
 import { CONFIG_KEY, EXTENSION_ID, getDebugChannel, GLOBAL_STORAGE, TEMPORARY_DIR } from '../settings';
-import { installMarketplace, updateMarketplace } from '../sources/marketplace';
+import { dispatchInstall } from '../utils/dispatch-install';
+import { dispatchUpdate } from '../utils/dispatch-update';
 import { listExtensions } from '../utils/list-extensions';
 import { listSources } from '../utils/list-sources';
 import { ExtensionList, Source } from '../utils/types';
@@ -79,7 +80,7 @@ async function installExtension(extension: string, sources: Record<string, Sourc
 			const currentVersion = managedExtensions[extensionName];
 
 			if(update && currentVersion) {
-				const version = await updateMarketplace(extensionName, currentVersion, source, TEMPORARY_DIR, debugChannel);
+				const version = await dispatchUpdate(extensionName, currentVersion, source, TEMPORARY_DIR, debugChannel);
 				if(version) {
 					installedExtensions[extensionName] = version;
 
@@ -102,16 +103,14 @@ async function installExtension(extension: string, sources: Record<string, Sourc
 			return;
 		}
 
-		if(source.type === 'marketplace') {
-			const version = await installMarketplace(extensionName, source, TEMPORARY_DIR, debugChannel);
-			if(version) {
-				installedExtensions[extensionName] = version;
+		const version = await dispatchInstall(extensionName, source, TEMPORARY_DIR, debugChannel);
+		if(version) {
+			installedExtensions[extensionName] = version;
 
-				debugChannel?.appendLine(`installed version: ${version}`);
-			}
-			else {
-				debugChannel?.appendLine('not found');
-			}
+			debugChannel?.appendLine(`installed version: ${version}`);
+		}
+		else {
+			debugChannel?.appendLine('not found');
 		}
 	}
 	else if(extension.includes('.')) {

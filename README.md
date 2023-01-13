@@ -56,7 +56,7 @@ Sources
 
 Within `vsix.sources`, you can define where to find the extensions.
 
-Currently, it support only marketplaces:
+### marketplace
 
 ```
 "vsix.sources": {
@@ -66,6 +66,22 @@ Currently, it support only marketplaces:
     },
 },
 ```
+
+### file
+
+```
+"vsix.sources": {
+    "mfs": {
+        "type": "file",
+        "path": "~/my-extensions",
+    },
+},
+```
+
+The latest version will be search in:
+- `~/my-extensions`
+- `~/my-extensions/<publisherName>`
+- `~/my-extensions/<publisherName>.<extensionName>`
 
 Groups
 ------
