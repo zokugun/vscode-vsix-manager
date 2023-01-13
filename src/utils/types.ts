@@ -7,8 +7,14 @@ export type ExtensionList = {
 	enabled: string[];
 };
 
-export type MarketPlace = {
+export type MarketPlaceOld = {
 	kind: 'marketplace';
+	serviceUrl: string;
+	itemUrl: string;
+};
+
+export type MarketPlace = {
+	type: 'marketplace';
 	serviceUrl: string;
 	itemUrl: string;
 };

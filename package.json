@@ -190,7 +190,7 @@
 							"type": "object",
 							"description": "A marketplace",
 							"properties": {
-								"kind": {
+								"type": {
 									"type": "string",
 									"default": "marketplace",
 									"enum": [

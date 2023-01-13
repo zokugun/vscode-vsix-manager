@@ -4,6 +4,7 @@ import vscode from 'vscode';
 import { CONFIG_KEY, EXTENSION_ID, getDebugChannel, GLOBAL_STORAGE, TEMPORARY_DIR } from '../settings';
 import { installMarketplace, updateMarketplace } from '../sources/marketplace';
 import { listExtensions } from '../utils/list-extensions';
+import { listSources } from '../utils/list-sources';
 import { ExtensionList, Source } from '../utils/types';
 
 export async function installExtensions(update: boolean = false): Promise<void> {
@@ -20,7 +21,7 @@ export async function installExtensions(update: boolean = false): Promise<void> 
 		return;
 	}
 
-	const sources = config.get<Record<string, Source>>('sources');
+	const sources = listSources(config);
 	const groups = config.get<Record<string, string[]>>('groups');
 
 	const editorExtensions = await listExtensions(EXTENSION_ID);
@@ -101,7 +102,7 @@ async function installExtension(extension: string, sources: Record<string, Sourc
 			return;
 		}
 
-		if(source.kind === 'marketplace') {
+		if(source.type === 'marketplace') {
 			const version = await installMarketplace(extensionName, source, TEMPORARY_DIR, debugChannel);
 			if(version) {
 				installedExtensions[extensionName] = version;

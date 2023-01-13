@@ -3,6 +3,7 @@ import fse from 'fs-extra';
 import vscode from 'vscode';
 import { CONFIG_KEY, getDebugChannel, GLOBAL_STORAGE, TEMPORARY_DIR } from '../settings';
 import { updateMarketplace } from '../sources/marketplace';
+import { listSources } from '../utils/list-sources';
 import { Source } from '../utils/types';
 
 export async function updateExtensions(): Promise<void> {
@@ -19,7 +20,7 @@ export async function updateExtensions(): Promise<void> {
 		return;
 	}
 
-	const sources = config.get<Record<string, Source>>('sources');
+	const sources = listSources(config);
 	const groups = config.get<Record<string, string[]>>('groups');
 
 	const extensionsFileName = path.join(GLOBAL_STORAGE, 'extensions.json');
@@ -67,7 +68,7 @@ async function updateExtension(extension: string, sources: Record<string, Source
 			return;
 		}
 
-		if(source.kind === 'marketplace') {
+		if(source.type === 'marketplace') {
 			const version = await updateMarketplace(extensionName, currentVersion, source, TEMPORARY_DIR, debugChannel);
 			if(version) {
 				managedExtensions[extensionName] = version;

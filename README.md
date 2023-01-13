@@ -19,7 +19,7 @@ In your settings:
 {
     "vsix.sources": {
         "opn": {
-            "kind": "marketplace",
+            "type": "marketplace",
             "serviceUrl": "https://open-vsx.org/vscode/gallery",
         },
     },
@@ -61,7 +61,7 @@ Currently, it support only marketplaces:
 ```
 "vsix.sources": {
     "opn": {
-        "kind": "marketplace",
+        "type": "marketplace",
         "serviceUrl": "https://open-vsx.org/vscode/gallery",
     },
 },
