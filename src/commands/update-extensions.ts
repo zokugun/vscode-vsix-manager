@@ -52,7 +52,7 @@ async function updateExtension(extension: string, sources: Record<string, Source
 
 		const [sourceName, extensionName] = extension.split(':');
 
-		const source = sources[sourceName];
+		const source = sourceName === 'github' ? sourceName : sources[sourceName];
 		if(!source) {
 			debugChannel?.appendLine(`source "${sourceName}" not found`);
 			return;
@@ -68,13 +68,25 @@ async function updateExtension(extension: string, sources: Record<string, Source
 			return;
 		}
 
-		const version = await dispatchUpdate(extensionName, currentVersion, source, TEMPORARY_DIR, debugChannel);
-		if(version) {
-			managedExtensions[extensionName] = version;
+		const result = await dispatchUpdate(extensionName, currentVersion, source, TEMPORARY_DIR, debugChannel);
+		if(!result) {
+			managedExtensions[extensionName] = currentVersion;
 
-			debugChannel?.appendLine(`updated to version: ${version}`);
+			debugChannel?.appendLine('no newer version found');
+		}
+		else if(typeof result === 'string') {
+			managedExtensions[extensionName] = result;
+
+			debugChannel?.appendLine(`updated to version: ${result}`);
+		}
+		else if(result.updated) {
+			managedExtensions[result.name] = result.version;
+
+			debugChannel?.appendLine(`updated to version: ${result.version}`);
 		}
 		else {
+			managedExtensions[result.name] = result.version;
+
 			debugChannel?.appendLine('no newer version found');
 		}
 	}

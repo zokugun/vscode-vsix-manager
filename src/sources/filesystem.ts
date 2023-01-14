@@ -72,7 +72,7 @@ async function search(extensionName: string, root: string, debugChannel: vscode.
 	};
 } // }}}
 
-export async function installFileSystem(extensionName: string, source: FileSystem, _: string, debugChannel: vscode.OutputChannel | undefined): Promise<string | undefined> { // {{{
+export async function installFileSystem(extensionName: string, source: FileSystem, debugChannel: vscode.OutputChannel | undefined): Promise<string | undefined> { // {{{
 	const root = untildify(source.path);
 
 	if(!fse.existsSync(root)) {
@@ -90,7 +90,7 @@ export async function installFileSystem(extensionName: string, source: FileSyste
 	}
 } // }}}
 
-export async function updateFileSystem(extensionName: string, currentVersion: string, source: FileSystem, _: string, debugChannel: vscode.OutputChannel | undefined): Promise<string | undefined> { // {{{
+export async function updateFileSystem(extensionName: string, currentVersion: string, source: FileSystem, debugChannel: vscode.OutputChannel | undefined): Promise<string | undefined> { // {{{
 	const root = untildify(source.path);
 
 	if(!fse.existsSync(root)) {

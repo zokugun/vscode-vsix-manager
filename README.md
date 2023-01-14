@@ -58,7 +58,7 @@ Within `vsix.sources`, you can define where to find the extensions.
 
 ### marketplace
 
-```
+```jsonc
 "vsix.sources": {
     "opn": {
         "type": "marketplace",
@@ -69,7 +69,7 @@ Within `vsix.sources`, you can define where to find the extensions.
 
 ### file
 
-```
+```jsonc
 "vsix.sources": {
     "mfs": {
         "type": "file",
@@ -82,6 +82,18 @@ The latest version will be search in:
 - `~/my-extensions`
 - `~/my-extensions/<publisherName>`
 - `~/my-extensions/<publisherName>.<extensionName>`
+
+### github
+
+`github` is a built-in source (not configuration needed) and will install extensions from the releases.
+
+```jsonc
+{
+    "vsix.extensions": [
+        "github:<username>/<project>",
+    ],
+}
+```
 
 Groups
 ------

@@ -66,7 +66,7 @@ async function installExtension(extension: string, sources: Record<string, Sourc
 
 		const [sourceName, extensionName] = extension.split(':');
 
-		const source = sources[sourceName];
+		const source = sourceName === 'github' ? sourceName : sources[sourceName];
 		if(!source) {
 			debugChannel?.appendLine(`source "${sourceName}" not found`);
 			return;
@@ -80,14 +80,24 @@ async function installExtension(extension: string, sources: Record<string, Sourc
 			const currentVersion = managedExtensions[extensionName];
 
 			if(update && currentVersion) {
-				const version = await dispatchUpdate(extensionName, currentVersion, source, TEMPORARY_DIR, debugChannel);
-				if(version) {
-					installedExtensions[extensionName] = version;
+				const result = await dispatchUpdate(extensionName, currentVersion, source, TEMPORARY_DIR, debugChannel);
+				if(!result) {
+					installedExtensions[extensionName] = currentVersion;
 
-					debugChannel?.appendLine(`updated to version: ${version}`);
+					debugChannel?.appendLine('no newer version found');
+				}
+				else if(typeof result === 'string') {
+					installedExtensions[extensionName] = result;
+
+					debugChannel?.appendLine(`updated to version: ${result}`);
+				}
+				else if(result.updated) {
+					installedExtensions[result.name] = result.version;
+
+					debugChannel?.appendLine(`updated to version: ${result.version}`);
 				}
 				else {
-					installedExtensions[extensionName] = currentVersion;
+					installedExtensions[result.name] = result.version;
 
 					debugChannel?.appendLine('no newer version found');
 				}
@@ -103,14 +113,19 @@ async function installExtension(extension: string, sources: Record<string, Sourc
 			return;
 		}
 
-		const version = await dispatchInstall(extensionName, source, TEMPORARY_DIR, debugChannel);
-		if(version) {
-			installedExtensions[extensionName] = version;
+		const result = await dispatchInstall(extensionName, source, TEMPORARY_DIR, debugChannel);
+		if(!result) {
+			debugChannel?.appendLine('not found');
+		}
+		else if(typeof result === 'string') {
+			installedExtensions[extensionName] = result;
 
-			debugChannel?.appendLine(`installed version: ${version}`);
+			debugChannel?.appendLine(`installed version: ${result}`);
 		}
 		else {
-			debugChannel?.appendLine('not found');
+			installedExtensions[result.name] = result.version;
+
+			debugChannel?.appendLine(`installed version: ${result.version}`);
 		}
 	}
 	else if(extension.includes('.')) {

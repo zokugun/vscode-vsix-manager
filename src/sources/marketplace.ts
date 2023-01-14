@@ -36,6 +36,24 @@ type QueryResult = {
 	}>;
 };
 
+async function download(extensionName: string, version: string, source: MarketPlace, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<void> {
+	debugChannel?.appendLine(`downloading version: ${version}`);
+
+	const [publisher, name] = extensionName.split('.');
+
+	const fileName = path.join(temporaryDir, `${extensionName}-${version}.vsix`);
+
+	const gotStream = got.stream.get(`${source.serviceUrl}/publishers/${publisher}/vsextensions/${name}/${version}/vspackage`);
+
+	const outStream = fse.createWriteStream(fileName);
+
+	await pipeline(gotStream, outStream);
+
+	await vscode.commands.executeCommand('workbench.extensions.installExtension', vscode.Uri.file(fileName));
+
+	await fse.unlink(fileName);
+} // }}}
+
 async function query(source: MarketPlace, extensionName: string): Promise<QueryResult> { // {{{
 	return got.post(`${source.serviceUrl}/extensionquery`, {
 		json: {
@@ -73,21 +91,7 @@ export async function installMarketplace(extensionName: string, source: MarketPl
 		return;
 	}
 
-	debugChannel?.appendLine(`downloading version: ${version}`);
-
-	const [publisher, name] = extensionName.split('.');
-
-	const fileName = path.join(temporaryDir, `${extensionName}-${version}.vsix`);
-
-	const gotStream = got.stream.get(`${source.serviceUrl}/publishers/${publisher}/vsextensions/${name}/${version}/vspackage`);
-
-	const outStream = fse.createWriteStream(fileName);
-
-	await pipeline(gotStream, outStream);
-
-	await vscode.commands.executeCommand('workbench.extensions.installExtension', vscode.Uri.file(fileName));
-
-	await fse.unlink(fileName);
+	await download(extensionName, version, source, temporaryDir, debugChannel);
 
 	return version;
 } // }}}
@@ -104,21 +108,7 @@ export async function updateMarketplace(extensionName: string, currentVersion: s
 		return;
 	}
 
-	debugChannel?.appendLine(`downloading version: ${version}`);
-
-	const [publisher, name] = extensionName.split('.');
-
-	const fileName = path.join(temporaryDir, `${extensionName}-${version}.vsix`);
-
-	const gotStream = got.stream.get(`${source.serviceUrl}/publishers/${publisher}/vsextensions/${name}/${version}/vspackage`);
-
-	const outStream = fse.createWriteStream(fileName);
-
-	await pipeline(gotStream, outStream);
-
-	await vscode.commands.executeCommand('workbench.extensions.installExtension', vscode.Uri.file(fileName));
-
-	await fse.unlink(fileName);
+	await download(extensionName, version, source, temporaryDir, debugChannel);
 
 	return version;
 } // }}}

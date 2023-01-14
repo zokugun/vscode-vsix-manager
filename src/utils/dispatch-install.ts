@@ -1,11 +1,16 @@
 import vscode from 'vscode';
 import { installFileSystem } from '../sources/filesystem';
+import { installGitHub } from '../sources/github';
 import { installMarketplace } from '../sources/marketplace';
-import { Source } from './types';
+import { InstallResult, Source } from './types';
 
-export async function dispatchInstall(extensionName: string, source: Source, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<string | undefined> {
+export async function dispatchInstall(extensionName: string, source: Source, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<InstallResult> {
+	if(source === 'github') {
+		return installGitHub(extensionName, temporaryDir, debugChannel);
+	}
+
 	if(source.type === 'file') {
-		return installFileSystem(extensionName, source, temporaryDir, debugChannel);
+		return installFileSystem(extensionName, source, debugChannel);
 	}
 
 	if(source.type === 'marketplace') {

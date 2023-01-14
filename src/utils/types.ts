@@ -12,6 +12,8 @@ export type FileSystem = {
 	path: string;
 };
 
+export type InstallResult = string | { name: string; version: string } | undefined;
+
 export type MarketPlaceOld = {
 	kind: 'marketplace';
 	serviceUrl: string;
@@ -24,7 +26,9 @@ export type MarketPlace = {
 	itemUrl: string;
 };
 
-export type Source = FileSystem | MarketPlace;
+export type Source = FileSystem | MarketPlace | 'github';
+
+export type UpdateResult = string | { name: string; version: string; updated: boolean } | undefined;
 
 export type VSIXManager = {
 	installExtensions(update?: boolean): Promise<void>;
