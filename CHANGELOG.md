@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.4.0 | 2023-01-14
+- add `file` source to install extensions from local directory
+- add built-in `github` source to install extensions from GitHub Releases
+- rename source's property `kind` as `type`
+
 ## v0.3.1 | 2022-12-25
 - correctly updating extensions when installing
 
