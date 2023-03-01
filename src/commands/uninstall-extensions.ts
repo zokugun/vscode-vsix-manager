@@ -69,7 +69,7 @@ async function uninstallExtension(extension: string, sources: Record<string, Sou
 		await vscode.commands.executeCommand('workbench.extensions.uninstallExtension', extensionName);
 	}
 	else if(extension.includes('.')) {
-		// skip, managed by the editor
+		await vscode.commands.executeCommand('workbench.extensions.uninstallExtension', extension);
 	}
 	else {
 		await updateGroup(extension, sources, groups, managedExtensions, debugChannel);
