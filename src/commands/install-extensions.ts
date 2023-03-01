@@ -55,7 +55,7 @@ export async function installExtensions(update: boolean = false): Promise<void> 
 	await fse.writeJSON(extensionsFileName, installedExtensions);
 }
 
-async function installExtension(extension: string, sources: Record<string, Source> | undefined, groups: Record<string, string[]> | undefined, editorExtensions: ExtensionList, managedExtensions: Record<string, string | null>, installedExtensions: Record<string, string | null>, debugChannel: vscode.OutputChannel | undefined, update: boolean): Promise<void> { // {{{
+async function installExtension(extension: string, sources: Record<string, Source> | undefined, groups: Record<string, string[]> | undefined, editorExtensions: ExtensionList, managedExtensions: Record<string, string>, installedExtensions: Record<string, string>, debugChannel: vscode.OutputChannel | undefined, update: boolean): Promise<void> { // {{{
 	debugChannel?.appendLine(`installing extension: ${extension}`);
 
 	if(extension.includes(':')) {
@@ -136,7 +136,7 @@ async function installExtension(extension: string, sources: Record<string, Sourc
 
 		await vscode.commands.executeCommand('workbench.extensions.installExtension', extension);
 
-		installedExtensions[extension] = null;
+		installedExtensions[extension] = '';
 		debugChannel?.appendLine('installed');
 	}
 	else {
@@ -144,7 +144,7 @@ async function installExtension(extension: string, sources: Record<string, Sourc
 	}
 } // }}}
 
-async function installGroup(groupName: string, sources: Record<string, Source> | undefined, groups: Record<string, string[]> | undefined, editorExtensions: ExtensionList, managedExtensions: Record<string, string | null>, installedExtensions: Record<string, string | null>, debugChannel: vscode.OutputChannel | undefined, update: boolean): Promise<void> { // {{{
+async function installGroup(groupName: string, sources: Record<string, Source> | undefined, groups: Record<string, string[]> | undefined, editorExtensions: ExtensionList, managedExtensions: Record<string, string>, installedExtensions: Record<string, string>, debugChannel: vscode.OutputChannel | undefined, update: boolean): Promise<void> { // {{{
 	debugChannel?.appendLine(`installing group: ${groupName}`);
 	if(!groups) {
 		debugChannel?.appendLine('no groups');
