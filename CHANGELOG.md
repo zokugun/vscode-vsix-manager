@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.4.1 | 2023-03-01
+- fix handling of extensions without source, thanks to **@manuth**
+
 ## v0.4.0 | 2023-01-14
 - add `file` source to install extensions from local directory
 - add built-in `github` source to install extensions from GitHub Releases
