@@ -137,6 +137,7 @@ async function installExtension(extension: string, sources: Record<string, Sourc
 		await vscode.commands.executeCommand('workbench.extensions.installExtension', extension);
 
 		installedExtensions[extension] = '';
+
 		debugChannel?.appendLine('installed');
 	}
 	else {
