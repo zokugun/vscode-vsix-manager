@@ -8,7 +8,7 @@ VSIX Manager
 [![Donation](https://img.shields.io/badge/donate-liberapay-green)](https://liberapay.com/daiyam/donate)
 [![Donation](https://img.shields.io/badge/donate-paypal-green)](https://paypal.me/daiyam99)
 
-With [VSIX Manager](https://github.com/zokugun/vscode-vsix-manager), you can manage your extensions for the your settings and install them from your own marketplaces.
+With [VSIX Manager](https://github.com/zokugun/vscode-vsix-manager), you can manage your extensions from your settings and install them from several places, including specified marketplaces or GitHub releases.
 
 Configuration
 -------------
@@ -78,14 +78,14 @@ Within `vsix.sources`, you can define where to find the extensions.
 },
 ```
 
-The latest version will be search in:
+The latest version will be searched in:
 - `~/my-extensions`
 - `~/my-extensions/<publisherName>`
 - `~/my-extensions/<publisherName>.<extensionName>`
 
 ### github
 
-`github` is a built-in source (not configuration needed) and will install extensions from the releases.
+`github` is a built-in source (no configuration required) and will install extensions from the GitHub release pages.
 
 ```jsonc
 {
@@ -104,13 +104,13 @@ Commands
 --------
 
 - `> VSIX Manager: Install extensions`: install the extensions
-- `> VSIX Manager: Unnstall extensions`: uninstall the extensions
+- `> VSIX Manager: Uninstall extensions`: uninstall the extensions
 - `> VSIX Manager: Update extensions`: update the extensions
 
 Crons
 -----
 
-`vsix.crons` allows you to schedule the command `update`.
+`vsix.crons` allows you to schedule the `update` command.
 
 ```jsonc
 "vsix.crons": {
