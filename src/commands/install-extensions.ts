@@ -52,7 +52,7 @@ export async function installExtensions(update: boolean = false): Promise<void> 
 		}
 	}
 
-	await fse.writeJSON(extensionsFileName, installedExtensions);
+	await fse.writeJSON(extensionsFileName, { ...managedExtensions, ...installedExtensions });
 }
 
 async function installExtension(extension: string, sources: Record<string, Source> | undefined, groups: Record<string, string[]> | undefined, editorExtensions: ExtensionList, managedExtensions: Record<string, string>, installedExtensions: Record<string, string>, debugChannel: vscode.OutputChannel | undefined, update: boolean): Promise<void> { // {{{
