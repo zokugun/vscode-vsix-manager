@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.4.2 | 2023-03-12
+- fix installing extensions without source
+- fix uninstalling extensions, thanks to **@manuth**
+- improved README, thanks to **@GitMensch**
+
 ## v0.4.1 | 2023-03-01
 - fix handling of extensions without source, thanks to **@manuth**
 
