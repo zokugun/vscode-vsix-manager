@@ -103,7 +103,7 @@ async function installExtension(extension: string, sources: Record<string, Sourc
 				}
 			}
 			else {
-				if(currentVersion) {
+				if(currentVersion) { // not null if the extension is managed by the manager
 					installedExtensions[extensionName] = currentVersion;
 				}
 
@@ -130,15 +130,19 @@ async function installExtension(extension: string, sources: Record<string, Sourc
 	}
 	else if(extension.includes('.')) {
 		if(editorExtensions.disabled.includes(extension) || editorExtensions.enabled.includes(extension)) {
+			const currentVersion = managedExtensions[extension];
+
+			installedExtensions[extension] = currentVersion ?? '0.0.0'; // can be null if the extension hasn't been installed by the manager
+
 			debugChannel?.appendLine('already installed');
-			return;
 		}
+		else {
+			await vscode.commands.executeCommand('workbench.extensions.installExtension', extension);
 
-		await vscode.commands.executeCommand('workbench.extensions.installExtension', extension);
+			installedExtensions[extension] = '0.0.0'; // unknown version
 
-		installedExtensions[extension] = '';
-
-		debugChannel?.appendLine('installed');
+			debugChannel?.appendLine('installed');
+		}
 	}
 	else {
 		await installGroup(extension, sources, groups, editorExtensions, managedExtensions, installedExtensions, debugChannel, update);
