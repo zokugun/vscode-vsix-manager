@@ -36,7 +36,7 @@ export async function uninstallExtensions(): Promise<void> {
 		}
 	}
 
-	await fse.writeJSON(extensionsFileName, []);
+	await fse.writeJSON(extensionsFileName, {});
 }
 
 async function uninstallExtension(extension: string, sources: Record<string, Source> | undefined, groups: Record<string, string[]> | undefined, managedExtensions: Record<string, string>, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
