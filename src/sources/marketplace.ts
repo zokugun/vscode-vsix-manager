@@ -73,7 +73,7 @@ async function query(source: MarketPlace, extensionName: string): Promise<QueryR
 					},
 				],
 				pageNumber: 1,
-				pageSize: 1,
+				pageSize: 12,
 				sortBy: 0,
 				sortOrder: 0,
 			}],
@@ -85,15 +85,23 @@ async function query(source: MarketPlace, extensionName: string): Promise<QueryR
 
 export async function installMarketplace(extensionName: string, source: MarketPlace, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<string | undefined> { // {{{
 	const result = await query(source, extensionName);
+	const extensions = result.results[0]?.extensions;
 
-	const version = result.results[0]?.extensions[0]?.versions[0]?.version;
-	if(!version) {
-		return;
+	if(extensions) {
+		const [publisher, name] = extensionName.split('.');
+
+		for(const extension of extensions) {
+			if(extension.extensionName === name && extension.publisher.publisherName === publisher) {
+				const version = extension.versions[0]?.version;
+
+				if(version) {
+					await download(extensionName, version, source, temporaryDir, debugChannel);
+
+					return version;
+				}
+			}
+		}
 	}
-
-	await download(extensionName, version, source, temporaryDir, debugChannel);
-
-	return version;
 } // }}}
 
 export async function updateMarketplace(extensionName: string, currentVersion: string, source: MarketPlace, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<string | undefined> { // {{{
