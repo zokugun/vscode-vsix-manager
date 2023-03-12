@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.4.3 | 2023-03-12
+- fix finding the correct extension to install from a marketplace
+
 ## v0.4.2 | 2023-03-12
 - fix installing extensions without source
 - fix uninstalling extensions, thanks to **@manuth**
