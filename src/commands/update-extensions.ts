@@ -39,6 +39,8 @@ export async function updateExtensions(): Promise<void> {
 	}
 
 	await fse.writeJSON(extensionsFileName, managedExtensions);
+
+	debugChannel?.appendLine('done');
 }
 
 async function updateExtension(extension: string, sources: Record<string, Source> | undefined, groups: Record<string, string[]> | undefined, managedExtensions: Record<string, string>, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{

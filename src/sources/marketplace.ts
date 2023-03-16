@@ -36,14 +36,29 @@ type QueryResult = {
 	}>;
 };
 
-async function download(extensionName: string, version: string, source: MarketPlace, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<void> {
-	debugChannel?.appendLine(`downloading version: ${version}`);
+const $nextRequestAt: Record<string, number> = {};
 
-	const [publisher, name] = extensionName.split('.');
+async function delayRequest(source: MarketPlace): Promise<void> { // {{{
+	let when = Date.now();
+	const next = $nextRequestAt[source.serviceUrl];
+
+	if(next && next > when) {
+		await new Promise((resolve) => {
+			setTimeout(resolve, next - when);
+		});
+
+		when = Date.now();
+	}
+
+	$nextRequestAt[source.serviceUrl] = when + source.throttle;
+} // }}}
+
+async function download(extensionName: string, version: string, downloadUrl: string, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<void> {
+	debugChannel?.appendLine(`downloading version: ${version}`);
 
 	const fileName = path.join(temporaryDir, `${extensionName}-${version}.vsix`);
 
-	const gotStream = got.stream.get(`${source.serviceUrl}/publishers/${publisher}/vsextensions/${name}/${version}/vspackage`);
+	const gotStream = got.stream.get(downloadUrl);
 
 	const outStream = fse.createWriteStream(fileName);
 
@@ -52,6 +67,18 @@ async function download(extensionName: string, version: string, source: MarketPl
 	await vscode.commands.executeCommand('workbench.extensions.installExtension', vscode.Uri.file(fileName));
 
 	await fse.unlink(fileName);
+} // }}}
+
+function getDownloadUrl(extensionName: string, version: string, source: MarketPlace, { files }: { files: Array<{ assetType: string; source: string }> }): string { // {{{
+	for(const { assetType, source } of files) {
+		if(assetType === 'Microsoft.VisualStudio.Services.VSIXPackage') {
+			return source;
+		}
+	}
+
+	const [publisher, name] = extensionName.split('.');
+
+	return `${source.serviceUrl}/publishers/${publisher}/vsextensions/${name}/${version}/vspackage`;
 } // }}}
 
 async function query(source: MarketPlace, extensionName: string): Promise<QueryResult> { // {{{
@@ -73,7 +100,7 @@ async function query(source: MarketPlace, extensionName: string): Promise<QueryR
 					},
 				],
 				pageNumber: 1,
-				pageSize: 12,
+				pageSize: 24,
 				sortBy: 0,
 				sortOrder: 0,
 			}],
@@ -84,6 +111,10 @@ async function query(source: MarketPlace, extensionName: string): Promise<QueryR
 } // }}}
 
 export async function installMarketplace(extensionName: string, source: MarketPlace, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<string | undefined> { // {{{
+	if(source.throttle > 0) {
+		await delayRequest(source);
+	}
+
 	const result = await query(source, extensionName);
 	const extensions = result.results[0]?.extensions;
 
@@ -95,7 +126,9 @@ export async function installMarketplace(extensionName: string, source: MarketPl
 				const version = extension.versions[0]?.version;
 
 				if(version) {
-					await download(extensionName, version, source, temporaryDir, debugChannel);
+					const downloadUrl = getDownloadUrl(extensionName, version, source, extension.versions[0]);
+
+					await download(extensionName, version, downloadUrl, temporaryDir, debugChannel);
 
 					return version;
 				}
@@ -105,18 +138,28 @@ export async function installMarketplace(extensionName: string, source: MarketPl
 } // }}}
 
 export async function updateMarketplace(extensionName: string, currentVersion: string, source: MarketPlace, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<string | undefined> { // {{{
+	if(source.throttle > 0) {
+		await delayRequest(source);
+	}
+
 	const result = await query(source, extensionName);
+	const extensions = result.results[0]?.extensions;
 
-	const version = result.results[0]?.extensions[0]?.versions[0]?.version;
-	if(!version) {
-		return;
+	if(extensions) {
+		const [publisher, name] = extensionName.split('.');
+
+		for(const extension of extensions) {
+			if(extension.extensionName === name && extension.publisher.publisherName === publisher) {
+				const version = extension.versions[0]?.version;
+
+				if(version && semver.gt(version, currentVersion)) {
+					const downloadUrl = getDownloadUrl(extensionName, version, source, extension.versions[0]);
+
+					await download(extensionName, version, downloadUrl, temporaryDir, debugChannel);
+
+					return version;
+				}
+			}
+		}
 	}
-
-	if(semver.lte(version, currentVersion)) {
-		return;
-	}
-
-	await download(extensionName, version, source, temporaryDir, debugChannel);
-
-	return version;
 } // }}}

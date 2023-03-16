@@ -24,6 +24,7 @@ export type MarketPlace = {
 	type: 'marketplace';
 	serviceUrl: string;
 	itemUrl: string;
+	throttle: number;
 };
 
 export type Source = FileSystem | MarketPlace | 'github';

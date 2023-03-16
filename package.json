@@ -206,6 +206,11 @@
 								"serviceUrl": {
 									"type": "string",
 									"description": "The url of the service API"
+								},
+								"throttle": {
+									"type": "integer",
+									"description": "The delay between each query (ms)",
+									"default": 0
 								}
 							}
 						}

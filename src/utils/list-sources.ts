@@ -13,6 +13,7 @@ export function listSources(config: vscode.WorkspaceConfiguration): Record<strin
 				type: 'marketplace',
 				serviceUrl: (source as MarketPlaceOld).serviceUrl,
 				itemUrl: (source as MarketPlaceOld).itemUrl,
+				throttle: 0,
 			};
 
 			void vscode.window.showWarningMessage('Please update your config. The property `vsix.sources/kind` has been deprecated and replaced with the property `vsix.sources/type`.');
