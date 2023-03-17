@@ -4,7 +4,7 @@ import globby from 'globby';
 import semver from 'semver';
 import untildify from 'untildify';
 import vscode from 'vscode';
-import { FileSystem } from '../utils/types';
+import { FileSystem, InstallResult } from '../utils/types';
 
 async function find(root: string, extensionName: string, debugChannel: vscode.OutputChannel | undefined): Promise<{ version: string; file: string }> { // {{{
 	const files = await globby('*.vsix', {
@@ -72,7 +72,7 @@ async function search(extensionName: string, root: string, debugChannel: vscode.
 	};
 } // }}}
 
-export async function installFileSystem(extensionName: string, source: FileSystem, debugChannel: vscode.OutputChannel | undefined): Promise<string | undefined> { // {{{
+export async function installFileSystem(extensionName: string, source: FileSystem, enabled: boolean, debugChannel: vscode.OutputChannel | undefined): Promise<InstallResult> { // {{{
 	const root = untildify(source.path);
 
 	if(!fse.existsSync(root)) {
@@ -86,7 +86,7 @@ export async function installFileSystem(extensionName: string, source: FileSyste
 
 		await vscode.commands.executeCommand('workbench.extensions.installExtension', vscode.Uri.file(path.join(root, file)));
 
-		return version;
+		return { name: extensionName, version, enabled };
 	}
 } // }}}
 

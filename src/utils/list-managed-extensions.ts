@@ -1,13 +1,9 @@
-import path from 'path';
-import fse from 'fs-extra';
-import { GLOBAL_STORAGE } from '../settings';
+import { ExtensionManager } from './extension-manager';
 
 export async function listManagedExtensions(): Promise<string[]> {
-	const extensionsFileName = path.join(GLOBAL_STORAGE, 'extensions.json');
+	const extensionManager = new ExtensionManager();
 
-	await fse.ensureFile(extensionsFileName);
+	await extensionManager.load();
 
-	const managedExtensions: Record<string, string> = (await fse.readJson(extensionsFileName, { throws: false }) ?? {}) as Record<string, string>;
-
-	return Object.keys(managedExtensions);
+	return extensionManager.listInstalled();
 }

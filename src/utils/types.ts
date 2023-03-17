@@ -22,7 +22,7 @@ export type FileSystem = {
 	fallback?: string;
 };
 
-export type InstallResult = string | { name: string; version: string } | undefined;
+export type InstallResult = { name: string; version: string; enabled: boolean } | undefined;
 
 export type MarketPlaceOld = {
 	kind: 'marketplace';

@@ -1,7 +1,7 @@
-import path from 'path';
-import fse from 'fs-extra';
 import vscode from 'vscode';
-import { CONFIG_KEY, getDebugChannel, GLOBAL_STORAGE } from '../settings';
+import { CONFIG_KEY, EXTENSION_ID, getDebugChannel } from '../settings';
+import { ExtensionManager } from '../utils/extension-manager';
+import { listExtensions } from '../utils/list-extensions';
 
 export async function uninstallExtensions(): Promise<void> {
 	const config = vscode.workspace.getConfiguration(CONFIG_KEY);
@@ -12,19 +12,14 @@ export async function uninstallExtensions(): Promise<void> {
 		debugChannel.show(true);
 	}
 
-	const extensionsFileName = path.join(GLOBAL_STORAGE, 'extensions.json');
+	const editorExtensions = await listExtensions(EXTENSION_ID);
+	const extensionManager = new ExtensionManager();
 
-	await fse.ensureFile(extensionsFileName);
+	await extensionManager.load();
 
-	const managedExtensions: Record<string, string> = (await fse.readJson(extensionsFileName, { throws: false }) ?? {}) as Record<string, string>;
+	await extensionManager.startInstallSession();
 
-	for(const extension of Object.keys(managedExtensions)) {
-		debugChannel?.appendLine(`uninstalling extension: ${extension}`);
-
-		await vscode.commands.executeCommand('workbench.extensions.uninstallExtension', extension);
-	}
-
-	await fse.writeJSON(extensionsFileName, {});
+	await extensionManager.save(editorExtensions, debugChannel);
 
 	debugChannel?.appendLine('done');
 }

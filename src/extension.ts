@@ -10,15 +10,6 @@ import { VSIXManager } from './utils/types';
 
 const VERSION_KEY = 'version';
 
-function setup(): void { // {{{
-	const config = vscode.workspace.getConfiguration(CONFIG_KEY);
-	const applyChanges = config.get<boolean>('applyChanges', true);
-
-	if(applyChanges) {
-		setTimeout(installExtensions, 150);
-	}
-} // }}}
-
 async function showWhatsNewMessage(version: string) { // {{{
 	const actions: vscode.MessageItem[] = [{
 		title: 'Homepage',
@@ -85,14 +76,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<VSIXMa
 		vscode.commands.registerCommand('vsix.uninstallExtensions', uninstallExtensions),
 		vscode.commands.registerCommand('vsix.updateExtensions', updateExtensions),
 	);
-
-	setup();
-
-	vscode.workspace.onDidChangeConfiguration(async (event) => {
-		if(event.affectsConfiguration(CONFIG_KEY)) {
-			setup();
-		}
-	});
 
 	await setupCrons();
 

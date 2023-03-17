@@ -23,7 +23,7 @@
 	"main": "./lib/index.js",
 	"browser": "./lib/index.js",
 	"scripts": {
-		"bundle": "ncc build out/extension --out lib",
+		"bundle": "ncc build out/extension --out lib --external sql.js",
 		"commit": "cz",
 		"compile": "tsc -p src",
 		"lint": "xo",
@@ -38,6 +38,7 @@
 		"globby": "^11.1.0",
 		"got": "^11.8.6",
 		"semver": "^7.3.5",
+		"sql.js": "^1.6.1",
 		"untildify": "^4.0.0"
 	},
 	"devDependencies": {
@@ -46,6 +47,7 @@
 		"@types/fs-extra": "^9.0.12",
 		"@types/node": "^16.11.45",
 		"@types/semver": "^7.3.8",
+		"@types/sql.js": "^1.4.2",
 		"@types/vscode": "^1.23.0",
 		"@vercel/ncc": "^0.34.0",
 		"commitizen": "^4.2.5",
@@ -63,6 +65,7 @@
 	"activationEvents": [
 		"onStartupFinished",
 		"onCommand:vsix.installExtensions",
+		"onCommand:vsix.uninstallExtensions",
 		"onCommand:vsix.updateExtensions"
 	],
 	"capabilities": {
@@ -92,15 +95,6 @@
 		"configuration": {
 			"title": "VSIX Manager",
 			"properties": {
-				"vsix.applyChanges": {
-					"type": "boolean",
-					"description": "Controls whether the changes are immediately applied or not",
-					"default": true,
-					"scope": "application",
-					"tags": [
-						"vsix"
-					]
-				},
 				"vsix.crons": {
 					"type": "object",
 					"description": "Automate some commands",

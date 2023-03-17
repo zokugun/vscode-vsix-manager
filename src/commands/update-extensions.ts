@@ -1,8 +1,7 @@
-import path from 'path';
-import fse from 'fs-extra';
 import vscode from 'vscode';
-import { CONFIG_KEY, getDebugChannel, GLOBAL_STORAGE, TEMPORARY_DIR } from '../settings';
+import { CONFIG_KEY, getDebugChannel, TEMPORARY_DIR } from '../settings';
 import { dispatchUpdate } from '../utils/dispatch-update';
+import { ExtensionManager } from '../utils/extension-manager';
 import { listSources } from '../utils/list-sources';
 import { parse } from '../utils/parse';
 import { Extension, Source } from '../utils/types';
@@ -24,30 +23,28 @@ export async function updateExtensions(): Promise<void> {
 	const sources = listSources(config);
 	const groups = config.get<Record<string, string[]>>('groups');
 
-	const extensionsFileName = path.join(GLOBAL_STORAGE, 'extensions.json');
+	const extensionManager = new ExtensionManager();
 
-	await fse.ensureFile(extensionsFileName);
-
-	const managedExtensions: Record<string, string> = (await fse.readJson(extensionsFileName, { throws: false }) ?? {}) as Record<string, string>;
+	await extensionManager.load();
 
 	for(const extension of extensions) {
-		await updateExtension(extension, sources, groups, managedExtensions, debugChannel);
+		await updateExtension(extension, sources, groups, extensionManager, debugChannel);
 	}
 
-	await fse.writeJSON(extensionsFileName, managedExtensions);
+	await extensionManager.save();
 
 	debugChannel?.appendLine('done');
 }
 
-async function updateExtension(data: unknown, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, managedExtensions: Record<string, string>, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
+async function updateExtension(data: unknown, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, extensionManager: ExtensionManager, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
 	for(const extension of parse(data)) {
 		try {
 			if(extension.kind === 'group') {
-				await updateGroup(extension, sources, groups, managedExtensions, debugChannel);
+				await updateGroup(extension, sources, groups, extensionManager, debugChannel);
 			}
-			else if(managedExtensions[extension.fullName]) {
+			else if(extensionManager.hasInstalled(extension.fullName)) {
 				if(extension.source) {
-					await updateExtensionWithSource(extension, sources, groups, managedExtensions, debugChannel);
+					await updateExtensionWithSource(extension, sources, groups, extensionManager, debugChannel);
 				}
 				else {
 					// skip, managed by the editor
@@ -62,7 +59,7 @@ async function updateExtension(data: unknown, sources: Record<string, Source> | 
 	}
 } // {{{
 
-async function updateExtensionWithSource(extension: Extension, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, managedExtensions: Record<string, string>, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
+async function updateExtensionWithSource(extension: Extension, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, extensionManager: ExtensionManager, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
 	debugChannel?.appendLine(`updating extension: ${extension.source!}:${extension.fullName}`);
 
 	if(!sources) {
@@ -76,7 +73,7 @@ async function updateExtensionWithSource(extension: Extension, sources: Record<s
 		return;
 	}
 
-	const currentVersion = managedExtensions[extension.fullName];
+	const currentVersion = extensionManager.getCurrentVersion(extension.fullName);
 	if(!currentVersion) {
 		debugChannel?.appendLine('not managed');
 		return;
@@ -85,28 +82,28 @@ async function updateExtensionWithSource(extension: Extension, sources: Record<s
 	const result = await dispatchUpdate(extension.fullName, currentVersion, source, TEMPORARY_DIR, debugChannel);
 
 	if(!result) {
-		managedExtensions[extension.fullName] = currentVersion;
+		extensionManager.setInstalled(extension.fullName, currentVersion);
 
 		debugChannel?.appendLine('no newer version found');
 	}
 	else if(typeof result === 'string') {
-		managedExtensions[extension.fullName] = result;
+		extensionManager.setInstalled(extension.fullName, result);
 
 		debugChannel?.appendLine(`updated to version: ${result}`);
 	}
 	else if(result.updated) {
-		managedExtensions[result.name] = result.version;
+		extensionManager.setInstalled(result.name, result.version);
 
 		debugChannel?.appendLine(`updated to version: ${result.version}`);
 	}
 	else {
-		managedExtensions[result.name] = result.version;
+		extensionManager.setInstalled(result.name, result.version);
 
 		debugChannel?.appendLine('no newer version found');
 	}
 } // }}}
 
-async function updateGroup(extension: Extension, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, managedExtensions: Record<string, string>, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
+async function updateGroup(extension: Extension, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, extensionManager: ExtensionManager, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
 	debugChannel?.appendLine(`updating group: ${extension.fullName}`);
 	if(!groups) {
 		debugChannel?.appendLine('no groups');
@@ -121,7 +118,7 @@ async function updateGroup(extension: Extension, sources: Record<string, Source>
 
 	for(const extension of extensions) {
 		try {
-			await updateExtension(extension, sources, groups, managedExtensions, debugChannel);
+			await updateExtension(extension, sources, groups, extensionManager, debugChannel);
 		}
 		catch (error: unknown) {
 			debugChannel?.appendLine(String(error));

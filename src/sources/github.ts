@@ -6,7 +6,7 @@ import semver from 'semver';
 import vscode from 'vscode';
 import { InstallResult, UpdateResult } from '../utils/types';
 
-async function download(name: string, version: string, url: string, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<void> {
+async function download(name: string, version: string, url: string, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
 	debugChannel?.appendLine(`downloading version: ${version}`);
 
 	const fileName = path.join(temporaryDir, `${name}-${version}.vsix`);
@@ -20,9 +20,9 @@ async function download(name: string, version: string, url: string, temporaryDir
 	await vscode.commands.executeCommand('workbench.extensions.installExtension', vscode.Uri.file(fileName));
 
 	await fse.unlink(fileName);
-}
+} // }}}
 
-export async function installGitHub(extensionName: string, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<InstallResult> { // {{{
+export async function installGitHub(extensionName: string, temporaryDir: string, enabled: boolean, debugChannel: vscode.OutputChannel | undefined): Promise<InstallResult> { // {{{
 	const results = await got.get(`https://api.github.com/repos/${extensionName}/releases`).json();
 
 	if(!results || !Array.isArray(results)) {
@@ -59,10 +59,7 @@ export async function installGitHub(extensionName: string, temporaryDir: string,
 
 	await download(name, version, url, temporaryDir, debugChannel);
 
-	return {
-		name,
-		version,
-	};
+	return { name, version, enabled };
 } // }}}
 
 export async function updateGitHub(extensionName: string, currentVersion: string, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<UpdateResult> { // {{{

@@ -53,7 +53,7 @@ async function delayRequest(source: MarketPlace): Promise<void> { // {{{
 	$nextRequestAt[source.serviceUrl] = when + source.throttle;
 } // }}}
 
-async function download(extensionName: string, version: string, downloadUrl: string, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<void> {
+async function download(extensionName: string, version: string, downloadUrl: string, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
 	debugChannel?.appendLine(`downloading version: ${version}`);
 
 	const fileName = path.join(temporaryDir, `${extensionName}-${version}.vsix`);
@@ -110,7 +110,7 @@ async function query(source: MarketPlace, extensionName: string): Promise<QueryR
 	}).json();
 } // }}}
 
-export async function installMarketplace(extensionName: string, source: MarketPlace, sources: Record<string, Source>, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<InstallResult> { // {{{
+export async function installMarketplace(extensionName: string, source: MarketPlace, sources: Record<string, Source>, temporaryDir: string, enabled: boolean, debugChannel: vscode.OutputChannel | undefined): Promise<InstallResult> { // {{{
 	if(source.throttle > 0) {
 		await delayRequest(source);
 	}
@@ -130,7 +130,7 @@ export async function installMarketplace(extensionName: string, source: MarketPl
 
 					await download(extensionName, version, downloadUrl, temporaryDir, debugChannel);
 
-					return version;
+					return { name: extensionName, version, enabled };
 				}
 			}
 		}

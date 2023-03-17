@@ -118,11 +118,6 @@ Crons
 }
 ```
 
-applyChanges
-------------
-
-With `vsix.applyChanges` (`true` by default), you can control whether whether the changes are immediately applied or not.
-
 Debugging
 ---------
 
