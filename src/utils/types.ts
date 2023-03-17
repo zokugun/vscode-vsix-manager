@@ -1,3 +1,12 @@
+export type Extension = {
+	kind: ExtensionKind;
+	fullName: string;
+	source?: string;
+	enabled: boolean;
+};
+
+export type ExtensionKind = 'extension' | 'group';
+
 export type ExtensionList = {
 	builtin?: {
 		disabled?: string[];

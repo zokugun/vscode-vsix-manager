@@ -4,7 +4,8 @@ import vscode from 'vscode';
 import { CONFIG_KEY, getDebugChannel, GLOBAL_STORAGE, TEMPORARY_DIR } from '../settings';
 import { dispatchUpdate } from '../utils/dispatch-update';
 import { listSources } from '../utils/list-sources';
-import { Source } from '../utils/types';
+import { parse } from '../utils/parse';
+import { Extension, Source } from '../utils/types';
 
 export async function updateExtensions(): Promise<void> {
 	const config = vscode.workspace.getConfiguration(CONFIG_KEY);
@@ -15,7 +16,7 @@ export async function updateExtensions(): Promise<void> {
 		debugChannel.show(true);
 	}
 
-	const extensions = config.get<string[]>('extensions');
+	const extensions = config.get<unknown[]>('extensions');
 	if(!extensions) {
 		return;
 	}
@@ -30,12 +31,7 @@ export async function updateExtensions(): Promise<void> {
 	const managedExtensions: Record<string, string> = (await fse.readJson(extensionsFileName, { throws: false }) ?? {}) as Record<string, string>;
 
 	for(const extension of extensions) {
-		try {
-			await updateExtension(extension, sources, groups, managedExtensions, debugChannel);
-		}
-		catch (error: unknown) {
-			debugChannel?.appendLine(String(error));
-		}
+		await updateExtension(extension, sources, groups, managedExtensions, debugChannel);
 	}
 
 	await fse.writeJSON(extensionsFileName, managedExtensions);
@@ -43,73 +39,83 @@ export async function updateExtensions(): Promise<void> {
 	debugChannel?.appendLine('done');
 }
 
-async function updateExtension(extension: string, sources: Record<string, Source> | undefined, groups: Record<string, string[]> | undefined, managedExtensions: Record<string, string>, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
-	debugChannel?.appendLine(`updating extension: ${extension}`);
+async function updateExtension(data: unknown, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, managedExtensions: Record<string, string>, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
+	for(const extension of parse(data)) {
+		try {
+			if(extension.kind === 'group') {
+				await updateGroup(extension, sources, groups, managedExtensions, debugChannel);
+			}
+			else if(managedExtensions[extension.fullName]) {
+				if(extension.source) {
+					await updateExtensionWithSource(extension, sources, groups, managedExtensions, debugChannel);
+				}
+				else {
+					// skip, managed by the editor
+				}
 
-	if(extension.includes(':')) {
-		if(!sources) {
-			debugChannel?.appendLine('no sources');
-			return;
+				return;
+			}
 		}
-
-		const [sourceName, extensionName] = extension.split(':');
-
-		const source = sourceName === 'github' ? sourceName : sources[sourceName];
-		if(!source) {
-			debugChannel?.appendLine(`source "${sourceName}" not found`);
-			return;
-		}
-
-		if(!extensionName) {
-			return;
-		}
-
-		const currentVersion = managedExtensions[extensionName];
-		if(!currentVersion) {
-			debugChannel?.appendLine('not managed');
-			return;
-		}
-
-		const result = await dispatchUpdate(extensionName, currentVersion, source, TEMPORARY_DIR, debugChannel);
-		if(!result) {
-			managedExtensions[extensionName] = currentVersion;
-
-			debugChannel?.appendLine('no newer version found');
-		}
-		else if(typeof result === 'string') {
-			managedExtensions[extensionName] = result;
-
-			debugChannel?.appendLine(`updated to version: ${result}`);
-		}
-		else if(result.updated) {
-			managedExtensions[result.name] = result.version;
-
-			debugChannel?.appendLine(`updated to version: ${result.version}`);
-		}
-		else {
-			managedExtensions[result.name] = result.version;
-
-			debugChannel?.appendLine('no newer version found');
+		catch (error: unknown) {
+			debugChannel?.appendLine(String(error));
 		}
 	}
-	else if(extension.includes('.')) {
-		// skip, managed by the editor
+} // {{{
+
+async function updateExtensionWithSource(extension: Extension, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, managedExtensions: Record<string, string>, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
+	debugChannel?.appendLine(`updating extension: ${extension.source!}:${extension.fullName}`);
+
+	if(!sources) {
+		debugChannel?.appendLine('no sources');
+		return;
+	}
+
+	const source = extension.source === 'github' ? extension.source : sources[extension.source!];
+	if(!source) {
+		debugChannel?.appendLine(`source "${extension.source!}" not found`);
+		return;
+	}
+
+	const currentVersion = managedExtensions[extension.fullName];
+	if(!currentVersion) {
+		debugChannel?.appendLine('not managed');
+		return;
+	}
+
+	const result = await dispatchUpdate(extension.fullName, currentVersion, source, TEMPORARY_DIR, debugChannel);
+
+	if(!result) {
+		managedExtensions[extension.fullName] = currentVersion;
+
+		debugChannel?.appendLine('no newer version found');
+	}
+	else if(typeof result === 'string') {
+		managedExtensions[extension.fullName] = result;
+
+		debugChannel?.appendLine(`updated to version: ${result}`);
+	}
+	else if(result.updated) {
+		managedExtensions[result.name] = result.version;
+
+		debugChannel?.appendLine(`updated to version: ${result.version}`);
 	}
 	else {
-		await updateGroup(extension, sources, groups, managedExtensions, debugChannel);
+		managedExtensions[result.name] = result.version;
+
+		debugChannel?.appendLine('no newer version found');
 	}
 } // }}}
 
-async function updateGroup(groupName: string, sources: Record<string, Source> | undefined, groups: Record<string, string[]> | undefined, managedExtensions: Record<string, string>, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
-	debugChannel?.appendLine(`updating group: ${groupName}`);
+async function updateGroup(extension: Extension, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, managedExtensions: Record<string, string>, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
+	debugChannel?.appendLine(`updating group: ${extension.fullName}`);
 	if(!groups) {
 		debugChannel?.appendLine('no groups');
 		return;
 	}
 
-	const extensions = groups[groupName];
+	const extensions = groups[extension.fullName];
 	if(!extensions) {
-		debugChannel?.appendLine(`group "${groupName}" not found`);
+		debugChannel?.appendLine(`group "${extension.fullName}" not found`);
 		return;
 	}
 

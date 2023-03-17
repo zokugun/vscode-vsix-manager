@@ -132,6 +132,29 @@
 					"items": [
 						{
 							"type": "string"
+						},
+						{
+							"type": "object",
+							"properties": {
+								"id": {
+									"type": [
+										"string",
+										"array"
+									]
+								},
+								"enabled": {
+									"type": "boolean",
+									"default": true
+								}
+							}
+						},
+						{
+							"type": "array",
+							"items": [
+								{
+									"type": "string"
+								}
+							]
 						}
 					],
 					"default": [],
@@ -151,6 +174,29 @@
 							"items": [
 								{
 									"type": "string"
+								},
+								{
+									"type": "object",
+									"properties": {
+										"id": {
+											"type": [
+												"string",
+												"array"
+											]
+										},
+										"enabled": {
+											"type": "boolean",
+											"default": true
+										}
+									}
+								},
+								{
+									"type": "array",
+									"items": [
+										{
+											"type": "string"
+										}
+									]
 								}
 							]
 						}
