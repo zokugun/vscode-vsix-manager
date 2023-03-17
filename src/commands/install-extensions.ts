@@ -129,7 +129,7 @@ async function installExtensionWithSource(extension: Extension, sources: Record<
 		return true;
 	}
 
-	const result = await dispatchInstall(extension.fullName, source, TEMPORARY_DIR, debugChannel);
+	const result = await dispatchInstall(extension.fullName, source, sources, TEMPORARY_DIR, debugChannel);
 
 	if(!result) {
 		debugChannel?.appendLine('not found');

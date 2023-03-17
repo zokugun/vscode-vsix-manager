@@ -19,6 +19,7 @@ export type ExtensionList = {
 export type FileSystem = {
 	type: 'file';
 	path: string;
+	fallback?: string;
 };
 
 export type InstallResult = string | { name: string; version: string } | undefined;
@@ -33,6 +34,7 @@ export type MarketPlace = {
 	type: 'marketplace';
 	serviceUrl: string;
 	itemUrl: string;
+	fallback?: string;
 	throttle: number;
 };
 

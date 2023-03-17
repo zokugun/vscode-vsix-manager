@@ -253,6 +253,10 @@
 									"type": "string",
 									"description": "The url of the service API"
 								},
+								"fallback": {
+									"type": "string",
+									"description": "Use the given source if an extension can't be found at the current source"
+								},
 								"throttle": {
 									"type": "integer",
 									"description": "The delay between each query (ms)",

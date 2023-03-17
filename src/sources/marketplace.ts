@@ -4,7 +4,7 @@ import fse from 'fs-extra';
 import got from 'got';
 import semver from 'semver';
 import vscode from 'vscode';
-import { MarketPlace } from '../utils/types';
+import { InstallResult, MarketPlace, Source } from '../utils/types';
 
 type QueryResult = {
 	results: Array<{
@@ -110,7 +110,7 @@ async function query(source: MarketPlace, extensionName: string): Promise<QueryR
 	}).json();
 } // }}}
 
-export async function installMarketplace(extensionName: string, source: MarketPlace, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<string | undefined> { // {{{
+export async function installMarketplace(extensionName: string, source: MarketPlace, sources: Record<string, Source>, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<InstallResult> { // {{{
 	if(source.throttle > 0) {
 		await delayRequest(source);
 	}
