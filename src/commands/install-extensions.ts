@@ -148,6 +148,7 @@ async function installExtensionWithSource(extension: Extension, sources: Record<
 
 	if(!result) {
 		debugChannel?.appendLine('not found');
+		return false;
 	}
 	else {
 		await extensionManager.addInstalled(result.name, result.version, result.enabled, debugChannel);
