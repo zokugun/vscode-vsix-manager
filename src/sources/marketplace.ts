@@ -88,7 +88,7 @@ async function query(source: MarketPlace, extensionName: string): Promise<QueryR
 				criteria: [
 					{
 						filterType: 10,
-						value: extensionName,
+						value: extensionName.replace('.', ' '),
 					},
 					{
 						filterType: 8,
