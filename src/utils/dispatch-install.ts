@@ -9,18 +9,23 @@ export async function dispatchInstall(extensionName: string, source: Source, sou
 		return installGitHub(extensionName, temporaryDir, enabled, debugChannel);
 	}
 
-	let result: InstallResult;
+	try {
+		let result: InstallResult;
 
-	if(source.type === 'file') {
-		result = await installFileSystem(extensionName, source, enabled, debugChannel);
+		if(source.type === 'file') {
+			result = await installFileSystem(extensionName, source, enabled, debugChannel);
+		}
+
+		if(source.type === 'marketplace') {
+			result = await installMarketplace(extensionName, source, sources!, temporaryDir, enabled, debugChannel);
+		}
+
+		if(result) {
+			return result;
+		}
 	}
-
-	if(source.type === 'marketplace') {
-		result = await installMarketplace(extensionName, source, sources!, temporaryDir, enabled, debugChannel);
-	}
-
-	if(result) {
-		return result;
+	catch (error: unknown) {
+		debugChannel?.appendLine(String(error));
 	}
 
 	if(source.fallback) {
