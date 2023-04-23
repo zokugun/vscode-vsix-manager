@@ -42,14 +42,62 @@ In your settings:
 }
 ```
 
+Groups
+------
+
+With `vsix.groups`, you can manage your extensions by sets.
+
 Extensions
 ----------
 
-`vsix.extensions` supports 3 type of "extensions":
-- `<sourceID>:<publisherName>.<extensionName>`: the extension can be found in the associated source<br>
-    (`<publisherName>.<extensionName>` <=> Extension ID)
-- `<publisherName>.<extensionName>`: the extension will be found in the default marketplace of the editor
-- `<groupName>`: use the extensions found in the group
+### String notation
+
+`vsix.extensions` and each group of `vsix.groups` are a list of expression
+
+```
+expression = ["-"] *identifier* ("||" *identifier*)*
+
+identifier = *groupName* | *extensionID* | *sourceName*:*extensionID*
+```
+
+- `extensionID`: id of an extension found in VSCode, VSCodium, ... (same as `<publisherName>.<extensionName>`)
+- `groupName`: name of a group defined in `vsix.groups`
+- `sourceName`: name of a source defined in `vsix.sources`
+
+```jsonc
+"vsix.extensions": [
+    "opn:zokugun.explicit-folding",
+    "-vsx:devXalt.extYalt||ms:devX.extY"
+],
+```
+
+### Object notation
+
+```jsonc
+"vsix.extensions": [
+    "-vsx:devXalt.extYalt||ms:devX.extY"
+],
+
+// is equivalent to
+
+"vsix.extensions": [
+    {
+        "id": [
+            "vsx:devXalt.extYalt",
+            "ms:devX.extY",
+        ],
+        "enabled": false,
+    },
+],
+```
+
+### Disable
+
+If an expression is prefixed by `-` or `"enabled": false`, then the extension or the group of extension will be installed in a disable state.
+
+### Alternatives
+
+If an expression contains multiple identifiers, the manager will try the first one. It it fails, it will try the next one until an extension is installed.
 
 Sources
 -------
@@ -95,10 +143,37 @@ The latest version will be searched in:
 }
 ```
 
-Groups
-------
+### `fallback` property
 
-With `vsix.groups`, you can manage your extensions by sets.
+You can use the `fallback` property to use another source when the extension isn't found in the first source.
+
+```
+"vsix.sources": {
+    "mfs": {
+        "type": "file",
+        "path": "~/my-extensions",
+        "fallback": "opn",
+    },
+    "opn": {
+        "type": "marketplace",
+        "serviceUrl": "https://open-vsx.org/vscode/gallery",
+    },
+},
+```
+
+### `throttle` property
+
+You can use the `throttle` property to limit the number of requests to a source.
+
+```jsonc
+"vsix.sources": {
+    "opn": {
+        "type": "marketplace",
+        "serviceUrl": "https://open-vsx.org/vscode/gallery",
+        "throttle": 5000,
+    },
+},
+```
 
 Commands
 --------

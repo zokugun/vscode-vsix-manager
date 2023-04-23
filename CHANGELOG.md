@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.5.0 | 2023-04-23
+- add alternatives to an extension
+- add ability to install disabled extensions
+- add `fallback` property to a source
+- add `throttle` property (in milliseconds) to a source
+- fix download using the url issued by the search result
+- improve search query to find the correct extension
+
 ## v0.4.3 | 2023-03-12
 - fix finding the correct extension to install from a marketplace
 
