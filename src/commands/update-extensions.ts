@@ -79,7 +79,7 @@ async function updateExtensionWithSource(extension: Extension, sources: Record<s
 		return;
 	}
 
-	const result = await dispatchUpdate(extension.fullName, currentVersion, source, TEMPORARY_DIR, debugChannel);
+	const result = await dispatchUpdate(extension.fullName, currentVersion, source, TEMPORARY_DIR, extension.targetPlatform, debugChannel);
 
 	if(!result) {
 		extensionManager.setInstalled(extension.fullName, currentVersion);
