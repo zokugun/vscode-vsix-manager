@@ -5,7 +5,7 @@ export function parse(data: unknown): Extension[] {
 
 	if(Array.isArray(data)) {
 		for(const d of data) {
-			parseString(d, null, result);
+			parseString(d, null, result, null);
 		}
 	}
 	else {
@@ -15,7 +15,7 @@ export function parse(data: unknown): Extension[] {
 	return result;
 }
 
-function parseString(data: string, enabled: boolean | null, result: Extension[]): void {
+function parseString(data: string, enabled: boolean | null, result: Extension[], targetPlatform: string | null): void {
 	if(enabled === null) {
 		if(data.startsWith('-')) {
 			enabled = false;
@@ -29,7 +29,7 @@ function parseString(data: string, enabled: boolean | null, result: Extension[])
 
 		if(alts.length > 1) {
 			for(const alt of alts) {
-				parseString(alt.trim(), enabled, result);
+				parseString(alt.trim(), enabled, result, targetPlatform);
 			}
 
 			return;
@@ -44,6 +44,7 @@ function parseString(data: string, enabled: boolean | null, result: Extension[])
 			source,
 			fullName,
 			enabled,
+			targetPlatform,
 		});
 	}
 	else if(data.includes('.')) {
@@ -51,6 +52,7 @@ function parseString(data: string, enabled: boolean | null, result: Extension[])
 			kind: 'extension',
 			fullName: data,
 			enabled,
+			targetPlatform,
 		});
 	}
 	else {
@@ -58,6 +60,7 @@ function parseString(data: string, enabled: boolean | null, result: Extension[])
 			kind: 'group',
 			fullName: data,
 			enabled,
+			targetPlatform,
 		});
 	}
 }
@@ -68,7 +71,7 @@ function parseUniq(data: any, result: Extension[]): void {
 	}
 
 	if(typeof data === 'string') {
-		parseString(data, null, result);
+		parseString(data, null, result, null);
 	}
 
 	if(typeof data !== 'object') {
@@ -87,11 +90,16 @@ function parseUniq(data: any, result: Extension[]): void {
 	if(Array.isArray(data.id)) {
 		for(const d of data.id) {
 			if(typeof d === 'string') {
-				parseString(d, enabled, result);
+				parseString(d, enabled, result, null);
 			}
 		}
 	}
 	else if(typeof data.id === 'string') {
-		parseString(data.id, enabled, result);
+		let targetPlatform: string | null = null;
+		if(typeof data.targetPlatform === 'string') {
+			targetPlatform = data.targetPlatform as string | null;
+		}
+
+		parseString(data.id, enabled, result, targetPlatform);
 	}
 }

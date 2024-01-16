@@ -110,7 +110,7 @@ async function query(source: MarketPlace, extensionName: string): Promise<QueryR
 	}).json();
 } // }}}
 
-export async function installMarketplace(extensionName: string, source: MarketPlace, sources: Record<string, Source>, temporaryDir: string, enabled: boolean, debugChannel: vscode.OutputChannel | undefined): Promise<InstallResult> { // {{{
+export async function installMarketplace(extensionName: string, source: MarketPlace, sources: Record<string, Source>, temporaryDir: string, enabled: boolean, targetPlatform: string | null, debugChannel: vscode.OutputChannel | undefined): Promise<InstallResult> { // {{{
 	if(source.throttle > 0) {
 		await delayRequest(source);
 	}
@@ -123,21 +123,24 @@ export async function installMarketplace(extensionName: string, source: MarketPl
 
 		for(const extension of extensions) {
 			if(extension.extensionName === name && extension.publisher.publisherName === publisher) {
-				const version = extension.versions[0]?.version;
+				for(const extensionVersion of extension.versions) {
+					const version = extensionVersion.version;
+					const correctPlatform = targetPlatform !== null ? extensionVersion.targetPlatform === targetPlatform : true;
 
-				if(version) {
-					const downloadUrl = getDownloadUrl(extensionName, version, source, extension.versions[0]);
+					if(version && correctPlatform) {
+						const downloadUrl = getDownloadUrl(extensionName, version, source, extensionVersion);
 
-					await download(extensionName, version, downloadUrl, temporaryDir, debugChannel);
+						await download(extensionName, version, downloadUrl, temporaryDir, debugChannel);
 
-					return { name: extensionName, version, enabled };
+						return { name: extensionName, version, enabled };
+					}
 				}
 			}
 		}
 	}
 } // }}}
 
-export async function updateMarketplace(extensionName: string, currentVersion: string, source: MarketPlace, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<string | undefined> { // {{{
+export async function updateMarketplace(extensionName: string, currentVersion: string, source: MarketPlace, temporaryDir: string, targetPlatform: string | null, debugChannel: vscode.OutputChannel | undefined): Promise<string | undefined> { // {{{
 	if(source.throttle > 0) {
 		await delayRequest(source);
 	}
@@ -150,14 +153,17 @@ export async function updateMarketplace(extensionName: string, currentVersion: s
 
 		for(const extension of extensions) {
 			if(extension.extensionName === name && extension.publisher.publisherName === publisher) {
-				const version = extension.versions[0]?.version;
+				for(const extensionVersion of extension.versions) {
+					const version = extensionVersion.version;
+					const correctPlatform = targetPlatform !== null ? extensionVersion.targetPlatform === targetPlatform : true;
 
-				if(version && semver.gt(version, currentVersion)) {
-					const downloadUrl = getDownloadUrl(extensionName, version, source, extension.versions[0]);
+					if(version && correctPlatform && semver.gt(version, currentVersion)) {
+						const downloadUrl = getDownloadUrl(extensionName, version, source, extensionVersion);
 
-					await download(extensionName, version, downloadUrl, temporaryDir, debugChannel);
+						await download(extensionName, version, downloadUrl, temporaryDir, debugChannel);
 
-					return version;
+						return version;
+					}
 				}
 			}
 		}
