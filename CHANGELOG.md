@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.6.0 | 2024-03-20
+- use platform to select archive, thanks to **@SylvKT**
+
 ## v0.5.0 | 2023-04-23
 - add alternatives to an extension
 - add ability to install disabled extensions
