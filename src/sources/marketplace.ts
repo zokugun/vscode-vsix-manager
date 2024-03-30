@@ -1,4 +1,5 @@
 import path from 'path';
+import { platform, arch } from 'process';
 import { pipeline } from 'stream/promises';
 import fse from 'fs-extra';
 import got from 'got';
@@ -29,14 +30,15 @@ type QueryResult = {
 					key: string;
 					value: string;
 				};
-				targetPlatform: string;
-				version: string;
+				targetPlatform: string | undefined;
+				version: string | undefined;
 			}>;
 		}>;
 	}>;
 };
 
 const $nextRequestAt: Record<string, number> = {};
+const targetPlatform = `${platform}-${arch}`;
 
 async function delayRequest(source: MarketPlace): Promise<void> { // {{{
 	let when = Date.now();
@@ -53,8 +55,8 @@ async function delayRequest(source: MarketPlace): Promise<void> { // {{{
 	$nextRequestAt[source.serviceUrl] = when + source.throttle;
 } // }}}
 
-async function download(extensionName: string, version: string, downloadUrl: string, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
-	debugChannel?.appendLine(`downloading version: ${version}`);
+async function download(extensionName: string, version: string, platform: string | undefined, downloadUrl: string, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
+	debugChannel?.appendLine(`downloading version: ${version}, platform: ${platform ?? 'universal'}`);
 
 	const fileName = path.join(temporaryDir, `${extensionName}-${version}.vsix`);
 
@@ -123,14 +125,17 @@ export async function installMarketplace(extensionName: string, source: MarketPl
 
 		for(const extension of extensions) {
 			if(extension.extensionName === name && extension.publisher.publisherName === publisher) {
-				const version = extension.versions[0]?.version;
+				for(const extensionVersion of extension.versions) {
+					const version = extensionVersion.version;
+					const matchedPlatform = extensionVersion.targetPlatform ? extensionVersion.targetPlatform === targetPlatform : true;
 
-				if(version) {
-					const downloadUrl = getDownloadUrl(extensionName, version, source, extension.versions[0]);
+					if(version && matchedPlatform) {
+						const downloadUrl = getDownloadUrl(extensionName, version, source, extensionVersion);
 
-					await download(extensionName, version, downloadUrl, temporaryDir, debugChannel);
+						await download(extensionName, version, extensionVersion.targetPlatform, downloadUrl, temporaryDir, debugChannel);
 
-					return { name: extensionName, version, enabled };
+						return { name: extensionName, version, enabled };
+					}
 				}
 			}
 		}
@@ -150,14 +155,17 @@ export async function updateMarketplace(extensionName: string, currentVersion: s
 
 		for(const extension of extensions) {
 			if(extension.extensionName === name && extension.publisher.publisherName === publisher) {
-				const version = extension.versions[0]?.version;
+				for(const extensionVersion of extension.versions) {
+					const version = extensionVersion.version;
+					const matchedPlatform = extensionVersion.targetPlatform ? extensionVersion.targetPlatform === targetPlatform : true;
 
-				if(version && semver.gt(version, currentVersion)) {
-					const downloadUrl = getDownloadUrl(extensionName, version, source, extension.versions[0]);
+					if(version && matchedPlatform && semver.gt(version, currentVersion)) {
+						const downloadUrl = getDownloadUrl(extensionName, version, source, extensionVersion);
 
-					await download(extensionName, version, downloadUrl, temporaryDir, debugChannel);
+						await download(extensionName, version, extensionVersion.targetPlatform, downloadUrl, temporaryDir, debugChannel);
 
-					return version;
+						return version;
+					}
 				}
 			}
 		}
