@@ -139,10 +139,6 @@
 								"enabled": {
 									"type": "boolean",
 									"default": true
-								},
-								"targetPlatform": {
-									"type": "string",
-									"default": null
 								}
 							}
 						},
@@ -185,10 +181,6 @@
 										"enabled": {
 											"type": "boolean",
 											"default": true
-										},
-										"targetPlatform": {
-											"type": "string",
-											"default": null
 										}
 									}
 								},

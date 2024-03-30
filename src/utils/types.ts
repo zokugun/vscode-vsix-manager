@@ -3,7 +3,6 @@ export type Extension = {
 	fullName: string;
 	source?: string;
 	enabled: boolean;
-	targetPlatform: string | null;
 };
 
 export type ExtensionKind = 'extension' | 'group';

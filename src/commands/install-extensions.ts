@@ -109,7 +109,7 @@ async function installExtensionWithSource(extension: Extension, sources: Record<
 			}
 
 			if(update) {
-				const result = await dispatchUpdate(extension.fullName, currentVersion, source, TEMPORARY_DIR, extension.targetPlatform, debugChannel);
+				const result = await dispatchUpdate(extension.fullName, currentVersion, source, TEMPORARY_DIR, debugChannel);
 				if(!result) {
 					extensionManager.setInstalled(extension.fullName, currentVersion);
 
@@ -144,7 +144,7 @@ async function installExtensionWithSource(extension: Extension, sources: Record<
 		return true;
 	}
 
-	const result = await dispatchInstall(extension.fullName, source, sources, TEMPORARY_DIR, extension.enabled, extension.targetPlatform, debugChannel);
+	const result = await dispatchInstall(extension.fullName, source, sources, TEMPORARY_DIR, extension.enabled, debugChannel);
 
 	if(!result) {
 		debugChannel?.appendLine('not found');
