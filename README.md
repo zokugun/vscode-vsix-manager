@@ -99,6 +99,10 @@ If an expression is prefixed by `-` or `"enabled": false`, then the extension or
 
 If an expression contains multiple identifiers, the manager will try the first one. It it fails, it will try the next one until an extension is installed.
 
+### Wanted version
+
+You can specify the version you want like `"ms:devX.extY@0.99.0"`.
+
 Sources
 -------
 

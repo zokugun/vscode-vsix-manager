@@ -62,6 +62,11 @@ async function updateExtension(data: unknown, sources: Record<string, Source> | 
 async function updateExtensionWithSource(extension: Extension, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, extensionManager: ExtensionManager, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
 	debugChannel?.appendLine(`updating extension: ${extension.source!}:${extension.fullName}`);
 
+	if(extension.version) {
+		debugChannel?.appendLine(`has specific version: ${extension.version}`);
+		return;
+	}
+
 	if(!sources) {
 		debugChannel?.appendLine('no sources');
 		return;

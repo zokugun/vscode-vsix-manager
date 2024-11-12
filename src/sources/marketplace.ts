@@ -98,7 +98,7 @@ async function query(source: MarketPlace, extensionName: string): Promise<QueryR
 					},
 					{
 						filterType: 12,
-						value: '4096',
+						value: `${0x1000}`,
 					},
 				],
 				pageNumber: 1,
@@ -106,38 +106,66 @@ async function query(source: MarketPlace, extensionName: string): Promise<QueryR
 				sortBy: 0,
 				sortOrder: 0,
 			}],
-			assetTypes: [],
-			flags: 950,
+			assetTypes: ['Microsoft.VisualStudio.Services.VSIXPackage'],
+			flags: 0x200 | 0x100 | 0x80 | 0x20 | 0x10 | 0x4 | 0x2,
 		},
 	}).json();
 } // }}}
 
-export async function installMarketplace(extensionName: string, source: MarketPlace, sources: Record<string, Source>, temporaryDir: string, enabled: boolean, debugChannel: vscode.OutputChannel | undefined): Promise<InstallResult> { // {{{
+export async function installMarketplace(extensionName: string, extensionVersion: string | undefined, source: MarketPlace, sources: Record<string, Source>, temporaryDir: string, enabled: boolean, debugChannel: vscode.OutputChannel | undefined): Promise<InstallResult> { // {{{
 	if(source.throttle > 0) {
 		await delayRequest(source);
 	}
 
 	const result = await query(source, extensionName);
+	debugChannel?.appendLine(JSON.stringify(result, null, '\t'));
 	const extensions = result.results[0]?.extensions;
 
 	if(extensions) {
 		const [publisher, name] = extensionName.split('.');
 
+		let minEngineVersion: string | null = null;
+
 		for(const extension of extensions) {
-			if(extension.extensionName === name && extension.publisher.publisherName === publisher) {
-				for(const extensionVersion of extension.versions) {
-					const version = extensionVersion.version;
-					const matchedPlatform = extensionVersion.targetPlatform ? extensionVersion.targetPlatform === targetPlatform : true;
+			if(extension.extensionName === name && (extension.publisher.publisherName === publisher || extension.publisher.displayName === publisher)) {
+				for(const data of extension.versions) {
+					let version = data.version;
+					const matchedPlatform = data.targetPlatform ? data.targetPlatform === targetPlatform : true;
 
 					if(version && matchedPlatform) {
-						const downloadUrl = getDownloadUrl(extensionName, version, source, extensionVersion);
+						let downloadUrl: string | null = null;
 
-						await download(extensionName, version, extensionVersion.targetPlatform, downloadUrl, temporaryDir, debugChannel);
+						if(extensionVersion) {
+							debugChannel?.appendLine(`use specified version: ${extensionVersion}`);
 
-						return { name: extensionName, version, enabled };
+							version = extensionVersion;
+							downloadUrl = `${source.serviceUrl}/publishers/${publisher}/vsextensions/${name}/${version}/vspackage`;
+						}
+						else {
+							const engineVersion = getEngineVersion(data);
+
+							if(engineVersion) {
+								if(!minEngineVersion || semver.lt(engineVersion, minEngineVersion)) {
+									minEngineVersion = engineVersion;
+								}
+							}
+							else {
+								downloadUrl = getDownloadUrl(extensionName, version, source, data);
+							}
+						}
+
+						if(version && downloadUrl) {
+							await download(extensionName, version, data.targetPlatform, downloadUrl, temporaryDir, debugChannel);
+
+							return { name: extensionName, version, enabled };
+						}
 					}
 				}
 			}
+		}
+
+		if(minEngineVersion) {
+			debugChannel?.appendLine(`the extension requires an IDE with the minimum version of "${minEngineVersion}"`);
 		}
 	}
 } // }}}
@@ -154,12 +182,12 @@ export async function updateMarketplace(extensionName: string, currentVersion: s
 		const [publisher, name] = extensionName.split('.');
 
 		for(const extension of extensions) {
-			if(extension.extensionName === name && extension.publisher.publisherName === publisher) {
+			if(extension.extensionName === name && (extension.publisher.publisherName === publisher || extension.publisher.displayName === publisher)) {
 				for(const extensionVersion of extension.versions) {
 					const version = extensionVersion.version;
 					const matchedPlatform = extensionVersion.targetPlatform ? extensionVersion.targetPlatform === targetPlatform : true;
 
-					if(version && matchedPlatform && semver.gt(version, currentVersion)) {
+					if(version && matchedPlatform && semver.gt(version, currentVersion) && isCompatibleEngine(extensionVersion)) {
 						const downloadUrl = getDownloadUrl(extensionName, version, source, extensionVersion);
 
 						await download(extensionName, version, extensionVersion.targetPlatform, downloadUrl, temporaryDir, debugChannel);
@@ -170,4 +198,31 @@ export async function updateMarketplace(extensionName: string, currentVersion: s
 			}
 		}
 	}
+} // }}}
+
+function isCompatibleEngine(extension): boolean { // {{{
+	for(const { key, value } of extension.properties) {
+		if(key === 'Microsoft.VisualStudio.Code.Engine') {
+			return semver.satisfies(vscode.version, value);
+		}
+	}
+
+	return true;
+} // }}}
+
+function getEngineVersion(extension): string | null { // {{{
+	let min: string | null = null;
+
+	for(const { key, value } of extension.properties) {
+		if(key === 'Microsoft.VisualStudio.Code.Engine') {
+			if(semver.satisfies(vscode.version, value)) {
+				return null;
+			}
+			else if(!min || semver.lt(value, min)) {
+				min = value as string;
+			}
+		}
+	}
+
+	return min;
 } // }}}

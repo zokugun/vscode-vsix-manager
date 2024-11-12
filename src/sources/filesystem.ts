@@ -6,7 +6,7 @@ import untildify from 'untildify';
 import vscode from 'vscode';
 import { FileSystem, InstallResult } from '../utils/types';
 
-async function find(root: string, extensionName: string, debugChannel: vscode.OutputChannel | undefined): Promise<{ version: string; file: string }> { // {{{
+async function find(root: string, extensionName: string, extensionVersion: string | undefined, debugChannel: vscode.OutputChannel | undefined): Promise<{ version: string; file: string }> { // {{{
 	const files = await globby('*.vsix', {
 		cwd: root,
 		followSymbolicLinks: false,
@@ -21,7 +21,13 @@ async function find(root: string, extensionName: string, debugChannel: vscode.Ou
 		if(match && match[1] === extensionName) {
 			debugChannel?.appendLine(`found: ${file}`);
 
-			if(latestVersion) {
+			if(extensionVersion) {
+				if(extensionVersion === match[2]) {
+					latestVersion = match[2];
+					lastestFile = file;
+				}
+			}
+			else if(latestVersion) {
 				if(semver.gt(match[2], latestVersion)) {
 					latestVersion = match[2];
 					lastestFile = file;
@@ -40,14 +46,14 @@ async function find(root: string, extensionName: string, debugChannel: vscode.Ou
 	};
 } // }}}
 
-async function search(extensionName: string, root: string, debugChannel: vscode.OutputChannel | undefined): Promise<{ version: string; file: string }> { // {{{
-	let { version, file } = await find(root, extensionName, debugChannel);
+async function search(extensionName: string, extensionVersion: string | undefined, root: string, debugChannel: vscode.OutputChannel | undefined): Promise<{ version: string; file: string }> { // {{{
+	let { version, file } = await find(root, extensionName, extensionVersion, debugChannel);
 
 	const names = /^([^.])\./.exec(extensionName);
 	if(names) {
 		const publisher = path.join(root, names[0]);
 		if(fse.statSync(publisher).isDirectory()) {
-			const { version: pubVersion, file: pubFile } = await find(publisher, extensionName, debugChannel);
+			const { version: pubVersion, file: pubFile } = await find(publisher, extensionName, extensionVersion, debugChannel);
 
 			if(semver.gt(pubVersion, version)) {
 				version = pubVersion;
@@ -57,7 +63,7 @@ async function search(extensionName: string, root: string, debugChannel: vscode.
 
 		const extension = path.join(root, extensionName);
 		if(fse.statSync(extension).isDirectory()) {
-			const { version: extVersion, file: extFile } = await find(extension, extensionName, debugChannel);
+			const { version: extVersion, file: extFile } = await find(extension, extensionName, extensionVersion, debugChannel);
 
 			if(semver.gt(extVersion, version)) {
 				version = extVersion;
@@ -72,14 +78,14 @@ async function search(extensionName: string, root: string, debugChannel: vscode.
 	};
 } // }}}
 
-export async function installFileSystem(extensionName: string, source: FileSystem, enabled: boolean, debugChannel: vscode.OutputChannel | undefined): Promise<InstallResult> { // {{{
+export async function installFileSystem(extensionName: string, extensionVersion: string | undefined, source: FileSystem, enabled: boolean, debugChannel: vscode.OutputChannel | undefined): Promise<InstallResult> { // {{{
 	const root = untildify(source.path);
 
 	if(!fse.existsSync(root)) {
 		return;
 	}
 
-	const { file, version } = await search(extensionName, root, debugChannel);
+	const { file, version } = await search(extensionName, extensionVersion, root, debugChannel);
 
 	if(file) {
 		debugChannel?.appendLine(`installing: ${file}`);
@@ -97,7 +103,7 @@ export async function updateFileSystem(extensionName: string, currentVersion: st
 		return;
 	}
 
-	const { file, version } = await search(extensionName, root, debugChannel);
+	const { file, version } = await search(extensionName, undefined, root, debugChannel);
 
 	if(file) {
 		if(semver.lte(version, currentVersion)) {

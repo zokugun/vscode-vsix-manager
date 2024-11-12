@@ -22,7 +22,7 @@ async function download(name: string, version: string, url: string, temporaryDir
 	await fse.unlink(fileName);
 } // }}}
 
-export async function installGitHub(extensionName: string, temporaryDir: string, enabled: boolean, debugChannel: vscode.OutputChannel | undefined): Promise<InstallResult> { // {{{
+export async function installGitHub(extensionName: string, extensionVersion: string | undefined, temporaryDir: string, enabled: boolean, debugChannel: vscode.OutputChannel | undefined): Promise<InstallResult> { // {{{
 	const results = await got.get(`https://api.github.com/repos/${extensionName}/releases`).json();
 
 	if(!results || !Array.isArray(results)) {
@@ -39,7 +39,14 @@ export async function installGitHub(extensionName: string, temporaryDir: string,
 				const match = /^(.*?)-(\d+\.\d+\.\d+)\.vsix$/.exec(asset.name);
 
 				if(match) {
-					if(!name) {
+					if(extensionVersion) {
+						if(extensionVersion === match[2]) {
+							name = match[1];
+							version = match[2];
+							url = asset.browser_download_url as string;
+						}
+					}
+					else if(!name) {
 						name = match[1];
 						version = match[2];
 						url = asset.browser_download_url as string;

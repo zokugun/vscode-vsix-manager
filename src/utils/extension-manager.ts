@@ -6,7 +6,7 @@ import { arrayDiff } from './array-diff';
 import { disableExtension } from './disable-extension';
 import { enableExtension } from './enable-extension';
 import { getUserDataPath } from './get-user-data-path';
-import { restartApp } from './restart-app';
+// import { restartApp } from './restart-app';
 import { ExtensionList } from './types';
 import { writeStateDB } from './write-statedb';
 
@@ -147,10 +147,10 @@ export class ExtensionManager {
 		});
 
 		if(restart) {
-			await restartApp();
+			// await restartApp();
 		}
 		else if(reload) {
-			await vscode.commands.executeCommand('workbench.action.reloadWindow');
+			// await vscode.commands.executeCommand('workbench.action.reloadWindow');
 		}
 	} // }}}
 

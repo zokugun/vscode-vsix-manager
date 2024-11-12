@@ -1,6 +1,7 @@
 export type Extension = {
 	kind: ExtensionKind;
 	fullName: string;
+	version?: string;
 	source?: string;
 	enabled: boolean;
 };

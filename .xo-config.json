@@ -109,6 +109,7 @@
 			12
 		],
 		"no-await-in-loop": "off",
+		"no-bitwise": "off",
 		"no-else-return": "off",
 		"no-lonely-if": "off",
 		"no-negated-condition": "off",
@@ -119,6 +120,15 @@
 		"unicorn/empty-brace-spaces": "off",
 		"unicorn/no-array-callback-reference": "off",
 		"unicorn/no-object-as-default-parameter": "off",
+		"unicorn/numeric-separators-style": [
+			"error",
+			{
+				"hexadecimal": {
+					"minimumDigits": 0,
+					"groupLength": 4
+				}
+			}
+		],
 		"unicorn/prefer-json-parse-buffer": "off",
 		"unicorn/prefer-module": "off",
 		"unicorn/prefer-node-protocol": "off",

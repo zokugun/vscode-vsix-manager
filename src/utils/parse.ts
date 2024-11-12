@@ -37,21 +37,33 @@ function parseString(data: string, enabled: boolean | null, result: Extension[])
 	}
 
 	if(data.includes(':')) {
-		const [source, fullName] = data.split(':');
+		const matches = /^([^:]*):(.*?)(?:@(\d+\.\d+\.\d+))?$/.exec(data);
 
-		result.push({
-			kind: 'extension',
-			source,
-			fullName,
-			enabled,
-		});
+		if(matches) {
+			const [, source, fullName, version] = matches;
+
+			result.push({
+				kind: 'extension',
+				source,
+				fullName,
+				version,
+				enabled,
+			});
+		}
 	}
 	else if(data.includes('.')) {
-		result.push({
-			kind: 'extension',
-			fullName: data,
-			enabled,
-		});
+		const matches = /^(.*?)(?:@(\d+\.\d+\.\d+))?$/.exec(data);
+
+		if(matches) {
+			const [, fullName, version] = matches;
+
+			result.push({
+				kind: 'extension',
+				fullName,
+				version,
+				enabled,
+			});
+		}
 	}
 	else {
 		result.push({
