@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.7.0 | 2024-11-12
+- access private github repositories
+- check engine compatibility
+- add wanted version
+
 ## v0.6.0 | 2024-03-20
 - use platform to select archive, thanks to **@SylvKT**
 
