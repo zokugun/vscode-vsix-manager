@@ -1,17 +1,18 @@
 import path from 'path';
+import process from 'process';
 import { pipeline } from 'stream/promises';
 import fse from 'fs-extra';
 import got from 'got';
 import semver from 'semver';
 import vscode from 'vscode';
-import { InstallResult, UpdateResult } from '../utils/types';
+import { GitHub, InstallResult, UpdateResult } from '../utils/types';
 
-async function download(name: string, version: string, url: string, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
+async function download(name: string, version: string, source: GitHub | undefined, url: string, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
 	debugChannel?.appendLine(`downloading version: ${version}`);
 
 	const fileName = path.join(temporaryDir, `${name}-${version}.vsix`);
 
-	const gotStream = got.stream.get(url);
+	const gotStream = got.stream.get(url, getHeaders(source));
 
 	const outStream = fse.createWriteStream(fileName);
 
@@ -22,8 +23,8 @@ async function download(name: string, version: string, url: string, temporaryDir
 	await fse.unlink(fileName);
 } // }}}
 
-export async function installGitHub(extensionName: string, extensionVersion: string | undefined, temporaryDir: string, enabled: boolean, debugChannel: vscode.OutputChannel | undefined): Promise<InstallResult> { // {{{
-	const results = await got.get(`https://api.github.com/repos/${extensionName}/releases`).json();
+export async function installGitHub(extensionName: string, extensionVersion: string | undefined, source: GitHub | undefined, temporaryDir: string, enabled: boolean, debugChannel: vscode.OutputChannel | undefined): Promise<InstallResult> { // {{{
+	const results = await got.get(getReleasesUrl(extensionName, source), getHeaders(source)).json();
 
 	if(!results || !Array.isArray(results)) {
 		return;
@@ -64,13 +65,13 @@ export async function installGitHub(extensionName: string, extensionVersion: str
 		return;
 	}
 
-	await download(name, version, url, temporaryDir, debugChannel);
+	await download(name, version, source, url, temporaryDir, debugChannel);
 
 	return { name, version, enabled };
 } // }}}
 
-export async function updateGitHub(extensionName: string, currentVersion: string, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<UpdateResult> { // {{{
-	const results = await got.get(`https://api.github.com/repos/${extensionName}/releases`).json();
+export async function updateGitHub(extensionName: string, currentVersion: string, source: GitHub | undefined, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<UpdateResult> { // {{{
+	const results = await got.get(getReleasesUrl(extensionName, source), getHeaders(source)).json();
 
 	if(!results || !Array.isArray(results)) {
 		return;
@@ -112,11 +113,43 @@ export async function updateGitHub(extensionName: string, currentVersion: string
 		};
 	}
 
-	await download(name, version, url, temporaryDir, debugChannel);
+	await download(name, version, source, url, temporaryDir, debugChannel);
 
 	return {
 		name,
 		version,
 		updated: true,
 	};
+} // }}}
+
+function getReleasesUrl(extensionName: string, source: GitHub | undefined): string { // {{{
+	if(source?.owner) {
+		return `https://api.github.com/repos/${source.owner}/${extensionName}/releases`;
+	}
+	else {
+		return `https://api.github.com/repos/${extensionName}/releases`;
+	}
+} // }}}
+
+function getHeaders(source: GitHub | undefined): {} | undefined { // {{{
+	if(source?.token) {
+		let token: string | undefined = '';
+
+		if(source.token.startsWith('env:')) {
+			token = process.env[source.token.slice(4)];
+		}
+		else {
+			token = source.token;
+		}
+
+		if(token) {
+			return {
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			};
+		}
+	}
+
+	return undefined;
 } // }}}

@@ -6,7 +6,7 @@ import { InstallResult, Source } from './types';
 
 export async function dispatchInstall(extensionName: string, extensionVersion: string | undefined, source: Source, sources: Record<string, Source> | undefined, temporaryDir: string, enabled: boolean, debugChannel: vscode.OutputChannel | undefined): Promise<InstallResult> {
 	if(source === 'github') {
-		return installGitHub(extensionName, extensionVersion, temporaryDir, enabled, debugChannel);
+		return installGitHub(extensionName, extensionVersion, undefined, temporaryDir, enabled, debugChannel);
 	}
 
 	try {
@@ -14,6 +14,10 @@ export async function dispatchInstall(extensionName: string, extensionVersion: s
 
 		if(source.type === 'file') {
 			result = await installFileSystem(extensionName, extensionVersion, source, enabled, debugChannel);
+		}
+
+		if(source.type === 'github') {
+			result = await installGitHub(extensionName, extensionVersion, source, temporaryDir, enabled, debugChannel);
 		}
 
 		if(source.type === 'marketplace') {

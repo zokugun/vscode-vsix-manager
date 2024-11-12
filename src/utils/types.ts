@@ -23,6 +23,13 @@ export type FileSystem = {
 	fallback?: string;
 };
 
+export type GitHub = {
+	type: 'github';
+	owner?: string;
+	token?: string;
+	fallback?: string;
+};
+
 export type InstallResult = { name: string; version: string; enabled: boolean } | undefined;
 
 export type MarketPlaceOld = {
@@ -39,7 +46,7 @@ export type MarketPlace = {
 	throttle: number;
 };
 
-export type Source = FileSystem | MarketPlace | 'github';
+export type Source = FileSystem | GitHub | MarketPlace | 'github';
 
 export type UpdateResult = string | { name: string; version: string; updated: boolean } | undefined;
 

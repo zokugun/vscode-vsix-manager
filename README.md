@@ -162,6 +162,40 @@ For an extension named: `"mfs:extXYZ"`, it will for thes files:
 }
 ```
 
+#### Private repository
+
+You can access your private repositories by giving an access token. You can specify an environment variable to read it from.
+
+```jsonc
+{
+    "vsix.sources": {
+        "mgh": {
+            "type": "github",
+            "token": "env:MY_TOKEN",
+        },
+    },
+    "vsix.extensions": [
+        "mgh:<username>/<project>",
+    ],
+}
+```
+
+#### Owner
+
+```jsonc
+{
+    "vsix.sources": {
+        "mgh": {
+            "type": "github",
+            "owner": "<username>",
+        },
+    },
+    "vsix.extensions": [
+        "mgh:<project>",
+    ],
+}
+```
+
 ### `fallback` property
 
 You can use the `fallback` property to use another source when the extension isn't found in the first source.
