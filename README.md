@@ -130,10 +130,25 @@ Within `vsix.sources`, you can define where to find the extensions.
 },
 ```
 
+#### Home
+
+The shortcut `~` for the home directory is working on all systems, including Windows.
+
+#### Lookup
+
 The latest version will be searched in:
 - `~/my-extensions`
 - `~/my-extensions/<publisherName>`
 - `~/my-extensions/<publisherName>.<extensionName>`
+
+For an extension named: `"mfs:devX.extY"`, it will for thes files:
+- `~/my-extensions/devX.extY-<version>.vsix`
+- `~/my-extensions/devX/devX.extY-<version>.vsix`
+- `~/my-extensions/devX.extY/devX.extY-<version>.vsix`
+
+For an extension named: `"mfs:extXYZ"`, it will for thes files:
+- `~/my-extensions/extXYZ-<version>.vsix`
+- `~/my-extensions/extXYZ/extXYZ-<version>.vsix`
 
 ### github
 
