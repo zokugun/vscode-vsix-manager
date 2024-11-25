@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.7.1 | 2024-11-25
+- remove debug log
+
 ## v0.7.0 | 2024-11-12
 - access private github repositories
 - check engine compatibility
