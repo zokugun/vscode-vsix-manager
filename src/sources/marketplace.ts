@@ -118,7 +118,6 @@ export async function installMarketplace(extensionName: string, extensionVersion
 	}
 
 	const result = await query(source, extensionName);
-	debugChannel?.appendLine(JSON.stringify(result, null, '\t'));
 	const extensions = result.results[0]?.extensions;
 
 	if(extensions) {
