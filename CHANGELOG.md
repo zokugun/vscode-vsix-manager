@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.7.2 | 2025-01-17
+- universal extensions are always installable
+
 ## v0.7.1 | 2024-11-25
 - remove debug log
 

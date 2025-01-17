@@ -2,7 +2,7 @@
 	"name": "vsix-manager",
 	"displayName": "VSIX Manager",
 	"description": "Install extensions from your own sources",
-	"version": "0.7.1",
+	"version": "0.7.2",
 	"author": {
 		"name": "Baptiste Augrain",
 		"email": "daiyam@zokugun.org"
