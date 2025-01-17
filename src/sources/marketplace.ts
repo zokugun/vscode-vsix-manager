@@ -129,7 +129,7 @@ export async function installMarketplace(extensionName: string, extensionVersion
 			if(extension.extensionName === name && (extension.publisher.publisherName === publisher || extension.publisher.displayName === publisher)) {
 				for(const data of extension.versions) {
 					let version = data.version;
-					const matchedPlatform = data.targetPlatform ? data.targetPlatform === targetPlatform : true;
+					const matchedPlatform = data.targetPlatform ? data.targetPlatform === targetPlatform || data.targetPlatform === 'universal' : true;
 
 					if(version && matchedPlatform) {
 						let downloadUrl: string | null = null;
