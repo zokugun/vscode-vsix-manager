@@ -1,5 +1,6 @@
 import vscode from 'vscode';
 import { installFileSystem } from '../sources/filesystem';
+import { installForgejo } from '../sources/forgejo';
 import { installGitHub } from '../sources/github';
 import { installMarketplace } from '../sources/marketplace';
 import { InstallResult, Source } from './types';
@@ -14,6 +15,10 @@ export async function dispatchInstall(extensionName: string, extensionVersion: s
 
 		if(source.type === 'file') {
 			result = await installFileSystem(extensionName, extensionVersion, source, enabled, debugChannel);
+		}
+
+		if(source.type === 'forgejo') {
+			result = await installForgejo(extensionName, extensionVersion, source, temporaryDir, enabled, debugChannel);
 		}
 
 		if(source.type === 'github') {

@@ -23,6 +23,14 @@ export type FileSystem = {
 	fallback?: string;
 };
 
+export type Forgejo = {
+	type: 'forgejo';
+	serviceUrl: string;
+	owner: string;
+	token?: string;
+	fallback?: string;
+};
+
 export type GitHub = {
 	type: 'github';
 	owner?: string;
@@ -46,7 +54,7 @@ export type MarketPlace = {
 	throttle: number;
 };
 
-export type Source = FileSystem | GitHub | MarketPlace | 'github';
+export type Source = FileSystem | Forgejo | GitHub | MarketPlace | 'github';
 
 export type UpdateResult = string | { name: string; version: string; updated: boolean } | undefined;
 
