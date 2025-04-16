@@ -1,13 +1,14 @@
 import vscode from 'vscode';
 import { installFileSystem } from '../sources/filesystem';
-import { installForgejo } from '../sources/forgejo';
-import { installGitHub } from '../sources/github';
+import * as Forgejo from '../sources/forgejo';
+import * as Git from '../sources/git';
+import * as GitHub from '../sources/github';
 import { installMarketplace } from '../sources/marketplace';
 import { InstallResult, Source } from './types';
 
 export async function dispatchInstall(extensionName: string, extensionVersion: string | undefined, source: Source, sources: Record<string, Source> | undefined, temporaryDir: string, enabled: boolean, debugChannel: vscode.OutputChannel | undefined): Promise<InstallResult> {
 	if(source === 'github') {
-		return installGitHub(extensionName, extensionVersion, undefined, temporaryDir, enabled, debugChannel);
+		return Git.install(extensionName, extensionVersion, undefined, GitHub, temporaryDir, enabled, debugChannel);
 	}
 
 	try {
@@ -18,11 +19,11 @@ export async function dispatchInstall(extensionName: string, extensionVersion: s
 		}
 
 		if(source.type === 'forgejo') {
-			result = await installForgejo(extensionName, extensionVersion, source, temporaryDir, enabled, debugChannel);
+			result = await Git.install(extensionName, extensionVersion, source, Forgejo, temporaryDir, enabled, debugChannel);
 		}
 
 		if(source.type === 'github') {
-			result = await installGitHub(extensionName, extensionVersion, source, temporaryDir, enabled, debugChannel);
+			result = await Git.install(extensionName, extensionVersion, source, GitHub, temporaryDir, enabled, debugChannel);
 		}
 
 		if(source.type === 'marketplace') {

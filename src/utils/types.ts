@@ -26,7 +26,7 @@ export type FileSystem = {
 export type Forgejo = {
 	type: 'forgejo';
 	serviceUrl: string;
-	owner: string;
+	owner?: string;
 	token?: string;
 	fallback?: string;
 };
@@ -36,6 +36,12 @@ export type GitHub = {
 	owner?: string;
 	token?: string;
 	fallback?: string;
+};
+
+export type GitService = Forgejo | GitHub;
+export type GitConfig = {
+	getHeaders(source: GitService | undefined): {} | undefined;
+	getReleasesUrl(extensionName: string, source: GitService | undefined): string;
 };
 
 export type InstallResult = { name: string; version: string; enabled: boolean } | undefined;
