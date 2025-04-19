@@ -10,6 +10,29 @@ VSIX Manager
 
 With [VSIX Manager](https://github.com/zokugun/vscode-vsix-manager), you can manage your extensions from your settings and install them from several places, including specified marketplaces or GitHub releases.
 
+Table of Contents
+-----------------
+
+- [Configuration](#configuration)
+- [Groups](#groups)
+- [Extensions](#extensions)
+    - [String notation](#string-notation)
+    - [Object notation](#object-notation)
+    - [Disable](#disable)
+    - [Alternatives](#alternatives)
+    - [Wanted version](#wanted-version)
+- [Sources](#sources)
+    - [marketplace](#marketplace)
+    - [file](#file)
+    - [github](#github)
+    - [forgejo](#forgejo)
+    - [fallback property](#fallback-property)
+    - [throttle property](#throttle-property)
+- [Commands](#commands)
+- [Crons](#crons)
+- [Debugging](#debugging)
+- [Donations](#donations)
+
 Configuration
 -------------
 
@@ -192,6 +215,60 @@ You can access your private repositories by giving an access token. You can spec
     },
     "vsix.extensions": [
         "mgh:<project>",
+    ],
+}
+```
+
+### forgejo
+
+`forgejo` is a built-in source and will install extensions from the Forgejo release pages.
+
+```jsonc
+{
+    "vsix.sources": {
+        "mfj": {
+            "type": "forgejo",
+            "serviceUrl": "https://forgejo.myserver.com/api/v1",
+        },
+    },
+    "vsix.extensions": [
+        "mfj:<username>/<project>",
+    ],
+}
+```
+
+#### Private repository
+
+You can access your private repositories by giving an access token. You can specify an environment variable to read it from.
+
+```jsonc
+{
+    "vsix.sources": {
+        "mfj": {
+            "type": "forgejo",
+            "serviceUrl": "https://forgejo.myserver.com/api/v1",
+            "token": "env:MY_TOKEN",
+        },
+    },
+    "vsix.extensions": [
+        "mfj:<username>/<project>",
+    ],
+}
+```
+
+#### Owner
+
+```jsonc
+{
+    "vsix.sources": {
+       "mfj": {
+            "type": "forgejo",
+            "serviceUrl": "https://forgejo.myserver.com/api/v1",
+            "owner": "<username>",
+        },
+    },
+    "vsix.extensions": [
+        "mfj:<project>",
     ],
 }
 ```
