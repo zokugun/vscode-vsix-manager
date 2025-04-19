@@ -23,11 +23,25 @@ export type FileSystem = {
 	fallback?: string;
 };
 
+export type Forgejo = {
+	type: 'forgejo';
+	serviceUrl: string;
+	owner?: string;
+	token?: string;
+	fallback?: string;
+};
+
 export type GitHub = {
 	type: 'github';
 	owner?: string;
 	token?: string;
 	fallback?: string;
+};
+
+export type GitService = Forgejo | GitHub;
+export type GitConfig = {
+	getHeaders(source: GitService | undefined): {} | undefined;
+	getReleasesUrl(extensionName: string, source: GitService | undefined): string;
 };
 
 export type InstallResult = { name: string; version: string; enabled: boolean } | undefined;
@@ -46,7 +60,7 @@ export type MarketPlace = {
 	throttle: number;
 };
 
-export type Source = FileSystem | GitHub | MarketPlace | 'github';
+export type Source = FileSystem | Forgejo | GitHub | MarketPlace | 'github';
 
 export type UpdateResult = string | { name: string; version: string; updated: boolean } | undefined;
 
