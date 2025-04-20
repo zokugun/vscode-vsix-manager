@@ -1,7 +1,7 @@
 import vscode from 'vscode';
-import { CONFIG_KEY, EXTENSION_ID, getDebugChannel } from '../settings';
-import { ExtensionManager } from '../utils/extension-manager';
-import { listExtensions } from '../utils/list-extensions';
+import { CONFIG_KEY, EXTENSION_ID, getDebugChannel } from '../settings.js';
+import { ExtensionManager } from '../utils/extension-manager.js';
+import { listExtensions } from '../utils/list-extensions.js';
 
 export async function uninstallExtensions(): Promise<void> {
 	const config = vscode.workspace.getConfiguration(CONFIG_KEY);

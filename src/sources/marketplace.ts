@@ -5,7 +5,22 @@ import fse from 'fs-extra';
 import got from 'got';
 import semver from 'semver';
 import vscode from 'vscode';
-import { InstallResult, MarketPlace, Source } from '../utils/types';
+import type { InstallResult, MarketPlace, Source } from '../utils/types.js';
+
+type Version = {
+	assetUri: string;
+	fallbackAssetUri: string;
+	files: Array<{
+		assetType: string;
+		source: string;
+	}>;
+	properties: Array<{
+		key: string;
+		value: string;
+	}>;
+	targetPlatform: string | undefined;
+	version: string | undefined;
+};
 
 type QueryResult = {
 	results: Array<{
@@ -19,20 +34,7 @@ type QueryResult = {
 				publisherName: string;
 			};
 			shortDescription: string;
-			versions: Array<{
-				assetUri: string;
-				fallbackAssetUri: string;
-				files: Array<{
-					assetType: string;
-					source: string;
-				}>;
-				properties: {
-					key: string;
-					value: string;
-				};
-				targetPlatform: string | undefined;
-				version: string | undefined;
-			}>;
+			versions: Version[];
 		}>;
 	}>;
 };
@@ -199,7 +201,7 @@ export async function updateMarketplace(extensionName: string, currentVersion: s
 	}
 } // }}}
 
-function isCompatibleEngine(extension): boolean { // {{{
+function isCompatibleEngine(extension: Version): boolean { // {{{
 	for(const { key, value } of extension.properties) {
 		if(key === 'Microsoft.VisualStudio.Code.Engine') {
 			return semver.satisfies(vscode.version, value);
@@ -209,7 +211,7 @@ function isCompatibleEngine(extension): boolean { // {{{
 	return true;
 } // }}}
 
-function getEngineVersion(extension): string | null { // {{{
+function getEngineVersion(extension: Version): string | null { // {{{
 	let min: string | null = null;
 
 	for(const { key, value } of extension.properties) {
@@ -218,7 +220,7 @@ function getEngineVersion(extension): string | null { // {{{
 				return null;
 			}
 			else if(!min || semver.lt(value, min)) {
-				min = value as string;
+				min = value;
 			}
 		}
 	}

@@ -1,12 +1,12 @@
 import vscode from 'vscode';
-import { CONFIG_KEY, EXTENSION_ID, getDebugChannel, TEMPORARY_DIR } from '../settings';
-import { dispatchInstall } from '../utils/dispatch-install';
-import { dispatchUpdate } from '../utils/dispatch-update';
-import { ExtensionManager } from '../utils/extension-manager';
-import { listExtensions } from '../utils/list-extensions';
-import { listSources } from '../utils/list-sources';
-import { parse } from '../utils/parse';
-import { Extension, ExtensionList, Source } from '../utils/types';
+import { CONFIG_KEY, EXTENSION_ID, getDebugChannel, TEMPORARY_DIR } from '../settings.js';
+import { dispatchInstall } from '../utils/dispatch-install.js';
+import { dispatchUpdate } from '../utils/dispatch-update.js';
+import { ExtensionManager } from '../utils/extension-manager.js';
+import { listExtensions } from '../utils/list-extensions.js';
+import { listSources } from '../utils/list-sources.js';
+import { parse } from '../utils/parse.js';
+import type { Extension, ExtensionList, Source } from '../utils/types.js';
 
 export async function installExtensions(update: boolean = false): Promise<void> {
 	const result = await vscode.window.showInformationMessage(
@@ -146,14 +146,14 @@ async function installExtensionWithSource(extension: Extension, sources: Record<
 
 	const result = await dispatchInstall(extension.fullName, extension.version, source, sources, TEMPORARY_DIR, extension.enabled, debugChannel);
 
-	if(!result) {
-		debugChannel?.appendLine('not found');
-		return false;
-	}
-	else {
+	if(result) {
 		await extensionManager.addInstalled(result.name, result.version, result.enabled, debugChannel);
 
 		debugChannel?.appendLine(`installed version: ${result.version}`);
+	}
+	else {
+		debugChannel?.appendLine('not found');
+		return false;
 	}
 
 	return true;

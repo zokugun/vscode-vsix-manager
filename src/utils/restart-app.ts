@@ -5,7 +5,7 @@ import fse from 'fs-extra';
 import vscode from 'vscode';
 
 export async function restartApp(): Promise<void> {
-	const product = JSON.parse(await fse.readFile(path.join(vscode.env.appRoot, 'product.json'), 'utf-8')) as { nameLong: string };
+	const product = JSON.parse(await fse.readFile(path.join(vscode.env.appRoot, 'product.json'), 'utf8')) as { nameLong: string };
 
 	if(process.platform === 'darwin') {
 		await restartMac(product);

@@ -1,12 +1,12 @@
 import vscode from 'vscode';
 import pkg from '../package.json';
-import { installExtensions } from './commands/install-extensions';
-import { uninstallExtensions } from './commands/uninstall-extensions';
-import { updateExtensions } from './commands/update-extensions';
-import { setupCrons } from './crons';
-import { CONFIG_KEY, setupSettings } from './settings';
-import { listManagedExtensions } from './utils/list-managed-extensions';
-import { VSIXManager } from './utils/types';
+import { installExtensions } from './commands/install-extensions.js';
+import { uninstallExtensions } from './commands/uninstall-extensions.js';
+import { updateExtensions } from './commands/update-extensions.js';
+import { setupCrons } from './crons.js';
+import { CONFIG_KEY, setupSettings } from './settings.js';
+import { listManagedExtensions } from './utils/list-managed-extensions.js';
+import { type VSIXManager } from './utils/types.js';
 
 const VERSION_KEY = 'version';
 

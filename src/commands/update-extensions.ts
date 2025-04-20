@@ -1,10 +1,10 @@
 import vscode from 'vscode';
-import { CONFIG_KEY, getDebugChannel, TEMPORARY_DIR } from '../settings';
-import { dispatchUpdate } from '../utils/dispatch-update';
-import { ExtensionManager } from '../utils/extension-manager';
-import { listSources } from '../utils/list-sources';
-import { parse } from '../utils/parse';
-import { Extension, Source } from '../utils/types';
+import { CONFIG_KEY, getDebugChannel, TEMPORARY_DIR } from '../settings.js';
+import { dispatchUpdate } from '../utils/dispatch-update.js';
+import { ExtensionManager } from '../utils/extension-manager.js';
+import { listSources } from '../utils/list-sources.js';
+import { parse } from '../utils/parse.js';
+import type { Extension, Source } from '../utils/types.js';
 
 export async function updateExtensions(): Promise<void> {
 	const config = vscode.workspace.getConfiguration(CONFIG_KEY);

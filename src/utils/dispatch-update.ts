@@ -1,10 +1,10 @@
-import vscode from 'vscode';
-import { updateFileSystem } from '../sources/filesystem';
-import * as Forgejo from '../sources/forgejo';
-import * as Git from '../sources/git';
-import * as GitHub from '../sources/github';
-import { updateMarketplace } from '../sources/marketplace';
-import { Source, UpdateResult } from './types';
+import type vscode from 'vscode';
+import { updateFileSystem } from '../sources/filesystem.js';
+import * as Forgejo from '../sources/forgejo.js';
+import * as Git from '../sources/git.js';
+import * as GitHub from '../sources/github.js';
+import { updateMarketplace } from '../sources/marketplace.js';
+import type { Source, UpdateResult } from './types.js';
 
 export async function dispatchUpdate(extensionName: string, currentVersion: string, source: Source, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<UpdateResult> {
 	if(source === 'github') {

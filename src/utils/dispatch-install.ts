@@ -1,10 +1,10 @@
-import vscode from 'vscode';
-import { installFileSystem } from '../sources/filesystem';
-import * as Forgejo from '../sources/forgejo';
-import * as Git from '../sources/git';
-import * as GitHub from '../sources/github';
-import { installMarketplace } from '../sources/marketplace';
-import { InstallResult, Source } from './types';
+import type vscode from 'vscode';
+import { installFileSystem } from '../sources/filesystem.js';
+import * as Forgejo from '../sources/forgejo.js';
+import * as Git from '../sources/git.js';
+import * as GitHub from '../sources/github.js';
+import { installMarketplace } from '../sources/marketplace.js';
+import type { InstallResult, Source } from './types.js';
 
 export async function dispatchInstall(extensionName: string, extensionVersion: string | undefined, source: Source, sources: Record<string, Source> | undefined, temporaryDir: string, enabled: boolean, debugChannel: vscode.OutputChannel | undefined): Promise<InstallResult> {
 	if(source === 'github') {

@@ -1,5 +1,5 @@
 import vscode from 'vscode';
-import { MarketPlaceOld, Source } from './types';
+import type { MarketPlaceOld, Source } from './types.js';
 
 export function listSources(config: vscode.WorkspaceConfiguration): Record<string, Source> | undefined {
 	const sources = config.get<Record<string, MarketPlaceOld | Source>>('sources');

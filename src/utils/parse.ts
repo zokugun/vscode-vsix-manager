@@ -1,11 +1,13 @@
-import { Extension } from './types';
+import type { Extension } from './types.js';
 
 export function parse(data: unknown): Extension[] {
 	const result: Extension[] = [];
 
 	if(Array.isArray(data)) {
 		for(const d of data) {
-			parseString(d, null, result);
+			if(typeof d === 'string') {
+				parseString(d, null, result);
+			}
 		}
 	}
 	else {
@@ -87,7 +89,9 @@ function parseUniq(data: any, result: Extension[]): void {
 		return;
 	}
 
-	if(!data.id) {
+	const { id } = data as { id: unknown };
+
+	if(!id) {
 		return;
 	}
 
@@ -96,14 +100,14 @@ function parseUniq(data: any, result: Extension[]): void {
 		enabled = Boolean(data.enabled);
 	}
 
-	if(Array.isArray(data.id)) {
-		for(const d of data.id) {
+	if(Array.isArray(id)) {
+		for(const d of id) {
 			if(typeof d === 'string') {
 				parseString(d, enabled, result);
 			}
 		}
 	}
-	else if(typeof data.id === 'string') {
-		parseString(data.id, enabled, result);
+	else if(typeof id === 'string') {
+		parseString(id, enabled, result);
 	}
 }

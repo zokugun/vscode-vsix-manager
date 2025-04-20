@@ -4,7 +4,7 @@ import fse from 'fs-extra';
 import got from 'got';
 import semver from 'semver';
 import vscode from 'vscode';
-import { GitConfig, GitService, InstallResult, UpdateResult } from '../utils/types';
+import type { GitConfig, GitService, InstallResult, UpdateResult } from '../utils/types.js';
 
 async function download(name: string, version: string, source: GitService | undefined, config: GitConfig, url: string, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
 	debugChannel?.appendLine(`downloading version: ${version}`);
@@ -36,7 +36,7 @@ export async function install(extensionName: string, extensionVersion: string | 
 	for(const result of results) {
 		if(result.assets) {
 			for(const asset of result.assets) {
-				const match = /^(.*?)-(\d+\.\d+\.\d+)\.vsix$/.exec(asset.name);
+				const match = /^(.*?)-(\d+\.\d+\.\d+)\.vsix$/.exec(asset.name as string);
 
 				if(match) {
 					if(extensionVersion) {
@@ -83,7 +83,7 @@ export async function update(extensionName: string, currentVersion: string, sour
 	for(const result of results) {
 		if(result.assets) {
 			for(const asset of result.assets) {
-				const match = /^(.*?)-(\d+\.\d+\.\d+)\.vsix$/.exec(asset.name);
+				const match = /^(.*?)-(\d+\.\d+\.\d+)\.vsix$/.exec(asset.name as string);
 
 				if(match) {
 					if(!name) {

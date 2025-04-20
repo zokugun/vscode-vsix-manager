@@ -2,8 +2,8 @@ import path from 'path';
 import fse from 'fs-extra';
 import globby from 'globby';
 import vscode from 'vscode';
-import { getExtensionDataPath } from './get-extension-data-path';
-import { ExtensionList } from './types';
+import { getExtensionDataPath } from './get-extension-data-path.js';
+import type { ExtensionList } from './types.js';
 
 export async function listExtensions(extensionId: string): Promise<ExtensionList> { // {{{
 	const builtin: {
@@ -31,11 +31,11 @@ export async function listExtensions(extensionId: string): Promise<ExtensionList
 		ids[id] = true;
 	}
 
-	const extDataPath = await getExtensionDataPath();
-	const obsoletePath = path.join(extDataPath, '.obsolete');
+	const extensionDataPath = await getExtensionDataPath();
+	const obsoletePath = path.join(extensionDataPath, '.obsolete');
 	const obsolete = await fse.pathExists(obsoletePath) ? await fse.readJSON(obsoletePath) as Record<string, boolean> : {};
 	const extensions = await globby('*/package.json', {
-		cwd: extDataPath,
+		cwd: extensionDataPath,
 	});
 
 	for(const packagePath of extensions) {
@@ -50,7 +50,7 @@ export async function listExtensions(extensionId: string): Promise<ExtensionList
 			continue;
 		}
 
-		const pkg = await fse.readJSON(path.join(extDataPath, packagePath)) as { name: string; publisher: string; __metadata: { id: string } };
+		const pkg = await fse.readJSON(path.join(extensionDataPath, packagePath)) as { name: string; publisher: string; __metadata: { id: string } };
 		const id = `${pkg.publisher}.${pkg.name}`;
 
 		if(obsolete[id]) {

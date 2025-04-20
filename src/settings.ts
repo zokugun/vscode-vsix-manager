@@ -13,9 +13,7 @@ let $channel: vscode.OutputChannel | null = null;
 
 export function getDebugChannel(debug: boolean): vscode.OutputChannel | undefined { // {{{
 	if(debug) {
-		if(!$channel) {
-			$channel = vscode.window.createOutputChannel('VSIX Manager');
-		}
+		$channel ||= vscode.window.createOutputChannel('VSIX Manager');
 
 		return $channel;
 	}

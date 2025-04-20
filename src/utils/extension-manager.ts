@@ -1,14 +1,14 @@
 import path from 'path';
 import fse from 'fs-extra';
 import vscode from 'vscode';
-import { GLOBAL_STORAGE } from '../settings';
-import { arrayDiff } from './array-diff';
-import { disableExtension } from './disable-extension';
-import { enableExtension } from './enable-extension';
-import { getUserDataPath } from './get-user-data-path';
+import { GLOBAL_STORAGE } from '../settings.js';
+import { arrayDiff } from './array-diff.js';
+import { disableExtension } from './disable-extension.js';
+import { enableExtension } from './enable-extension.js';
+import { getUserDataPath } from './get-user-data-path.js';
 // import { restartApp } from './restart-app';
-import { ExtensionList } from './types';
-import { writeStateDB } from './write-statedb';
+import type { ExtensionList } from './types.js';
+import { writeStateDB } from './write-statedb.js';
 
 async function canManageExtensions(): Promise<boolean> { // {{{
 	const commands = await vscode.commands.getCommands();

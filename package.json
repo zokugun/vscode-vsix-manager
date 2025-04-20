@@ -28,7 +28,7 @@
 		"compile": "tsc -p src",
 		"lint": "xo",
 		"package": "rm -f *.vsix && vsce package",
-		"prepare": "husky install; fixpack || true",
+		"prepare": "husky; fixpack || true",
 		"release": "release-it",
 		"vscode:prepublish": "npm run compile && npm run bundle",
 		"watch": "tsc-watch -p src --onSuccess 'npm run bundle'"
@@ -42,22 +42,22 @@
 		"untildify": "^4.0.0"
 	},
 	"devDependencies": {
-		"@commitlint/cli": "^17.0.3",
-		"@commitlint/config-conventional": "^17.0.3",
+		"@commitlint/cli": "^19.7.1",
+		"@commitlint/config-conventional": "^19.7.1",
 		"@types/fs-extra": "^9.0.12",
-		"@types/node": "^16.11.45",
+		"@types/node": "^20.14.8",
 		"@types/semver": "^7.3.8",
 		"@types/sql.js": "^1.4.2",
 		"@types/vscode": "^1.23.0",
-		"@vercel/ncc": "^0.34.0",
-		"commitizen": "^4.2.5",
+		"@vercel/ncc": "^0.38.3",
+		"commitizen": "^4.3.1",
 		"fixpack": "^4.0.0",
-		"husky": "^8.0.1",
-		"lint-staged": "^13.0.3",
-		"release-it": "^15.3.0",
-		"tsc-watch": "^5.0.3",
-		"typescript": "^4.2.4",
-		"xo": "^0.48.0"
+		"husky": "^9.1.7",
+		"lint-staged": "^15.4.3",
+		"release-it": "^18.1.2",
+		"tsc-watch": "^6.3.0",
+		"typescript": "^5.7.3",
+		"xo": "0.60.0"
 	},
 	"extensionDependencies": [
 		"zokugun.cron-tasks"

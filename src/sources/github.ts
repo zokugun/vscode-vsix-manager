@@ -1,5 +1,5 @@
 import process from 'process';
-import { GitHub } from '../utils/types';
+import type { GitHub } from '../utils/types.js';
 
 export function getReleasesUrl(extensionName: string, source: GitHub | undefined): string { // {{{
 	if(source?.owner) {

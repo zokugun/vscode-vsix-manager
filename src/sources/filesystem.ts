@@ -4,7 +4,7 @@ import globby from 'globby';
 import semver from 'semver';
 import untildify from 'untildify';
 import vscode from 'vscode';
-import { FileSystem, InstallResult } from '../utils/types';
+import type { FileSystem, InstallResult } from '../utils/types.js';
 
 async function find(root: string, extensionName: string, extensionVersion: string | undefined, debugChannel: vscode.OutputChannel | undefined): Promise<{ version: string; file: string }> { // {{{
 	const files = await globby('*.vsix', {
@@ -53,21 +53,21 @@ async function search(extensionName: string, extensionVersion: string | undefine
 	if(names) {
 		const publisher = path.join(root, names[0]);
 		if(fse.statSync(publisher).isDirectory()) {
-			const { version: pubVersion, file: pubFile } = await find(publisher, extensionName, extensionVersion, debugChannel);
+			const { version: foundVersion, file: foundFile } = await find(publisher, extensionName, extensionVersion, debugChannel);
 
-			if(semver.gt(pubVersion, version)) {
-				version = pubVersion;
-				file = pubFile;
+			if(semver.gt(foundVersion, version)) {
+				version = foundVersion;
+				file = foundFile;
 			}
 		}
 
 		const extension = path.join(root, extensionName);
 		if(fse.statSync(extension).isDirectory()) {
-			const { version: extVersion, file: extFile } = await find(extension, extensionName, extensionVersion, debugChannel);
+			const { version: foundVersion, file: foundFile } = await find(extension, extensionName, extensionVersion, debugChannel);
 
-			if(semver.gt(extVersion, version)) {
-				version = extVersion;
-				file = extFile;
+			if(semver.gt(foundVersion, version)) {
+				version = foundVersion;
+				file = foundFile;
 			}
 		}
 	}
