@@ -6,7 +6,7 @@ import { ExtensionManager } from '../utils/extension-manager.js';
 import { listExtensions } from '../utils/list-extensions.js';
 import { listSources } from '../utils/list-sources.js';
 import { parse } from '../utils/parse.js';
-import type { Extension, ExtensionList, Source } from '../utils/types.js';
+import type { Extension, ExtensionList, RestartMode, Source } from '../utils/types.js';
 
 export async function installExtensions(update: boolean = false): Promise<void> {
 	const result = await vscode.window.showInformationMessage(
@@ -48,7 +48,9 @@ export async function installExtensions(update: boolean = false): Promise<void> 
 		await installExtension(extension, sources, groups, editorExtensions, extensionManager, debugChannel, update);
 	}
 
-	await extensionManager.save(editorExtensions, debugChannel);
+	const restartMode = config.get<RestartMode>('restartMode') ?? 'auto';
+
+	await extensionManager.save(restartMode, editorExtensions, debugChannel);
 
 	debugChannel?.appendLine('done');
 }

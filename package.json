@@ -224,6 +224,29 @@
 						"vsix"
 					]
 				},
+				"vsix.restartMode": {
+					"type": "string",
+					"description": "Select how to restart the extension host (only for advanced users, should be left on 'auto')",
+					"default": "auto",
+					"enum": [
+						"auto",
+						"none",
+						"reload-windows",
+						"restart-app",
+						"restart-host"
+					],
+					"enumDescriptions": [
+						"Select the best action",
+						"Do nothing",
+						"Reload the window",
+						"Restart the extension host",
+						"Restart the app"
+					],
+					"scope": "application",
+					"tags": [
+						"vsix"
+					]
+				},
 				"vsix.sources": {
 					"type": "object",
 					"description": "Map of sources from which to find the VSIX files",

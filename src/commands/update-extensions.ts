@@ -4,7 +4,7 @@ import { dispatchUpdate } from '../utils/dispatch-update.js';
 import { ExtensionManager } from '../utils/extension-manager.js';
 import { listSources } from '../utils/list-sources.js';
 import { parse } from '../utils/parse.js';
-import type { Extension, Source } from '../utils/types.js';
+import type { Extension, RestartMode, Source } from '../utils/types.js';
 
 export async function updateExtensions(): Promise<void> {
 	const config = vscode.workspace.getConfiguration(CONFIG_KEY);
@@ -31,7 +31,9 @@ export async function updateExtensions(): Promise<void> {
 		await updateExtension(extension, sources, groups, extensionManager, debugChannel);
 	}
 
-	await extensionManager.save();
+	const restartMode = config.get<RestartMode>('restartMode') ?? 'auto';
+
+	await extensionManager.save(restartMode);
 
 	debugChannel?.appendLine('done');
 }

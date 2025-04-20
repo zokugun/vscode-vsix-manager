@@ -120,6 +120,7 @@
 		],
 		"unicorn/empty-brace-spaces": "off",
 		"unicorn/no-array-callback-reference": "off",
+		"unicorn/no-lonely-if": "off",
 		"unicorn/no-object-as-default-parameter": "off",
 		"unicorn/numeric-separators-style": [
 			"error",

@@ -7,7 +7,7 @@ import { arrayDiff } from './array-diff.js';
 import { disableExtension } from './disable-extension.js';
 import { enableExtension } from './enable-extension.js';
 import { getUserDataPath } from './get-user-data-path.js';
-import type { ExtensionList } from './types.js';
+import type { ExtensionList, RestartMode } from './types.js';
 import { writeStateDB } from './write-statedb.js';
 
 async function canManageExtensions(): Promise<boolean> { // {{{
@@ -93,7 +93,7 @@ export class ExtensionManager {
 		}
 	} // }}}
 
-	public async save(editor?: ExtensionList, debugChannel?: vscode.OutputChannel | undefined) { // {{{
+	public async save(restartMode: RestartMode, editor?: ExtensionList, debugChannel?: vscode.OutputChannel | undefined) { // {{{
 		let reload = false;
 		let restart = false;
 
@@ -146,11 +146,31 @@ export class ExtensionManager {
 			disabled: this._currentDisabled,
 		});
 
-		if(restart) {
-			await restartApp();
+		if(restartMode === 'auto') {
+			if(restart) {
+				await vscode.commands.executeCommand('workbench.action.restartExtensionHost');
+			}
+			else if(reload) {
+				await vscode.commands.executeCommand('workbench.action.reloadWindow');
+			}
 		}
-		else if(reload) {
-			await vscode.commands.executeCommand('workbench.action.reloadWindow');
+		else if(restartMode === 'none') {
+			// do nothing
+		}
+		else if(restartMode === 'reload-windows') {
+			if(restart || reload) {
+				await vscode.commands.executeCommand('workbench.action.reloadWindow');
+			}
+		}
+		else if(restartMode === 'restart-app') {
+			if(restart || reload) {
+				await restartApp();
+			}
+		}
+		else if(restartMode === 'restart-host') {
+			if(restart || reload) {
+				await vscode.commands.executeCommand('workbench.action.restartExtensionHost');
+			}
 		}
 	} // }}}
 

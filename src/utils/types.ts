@@ -60,6 +60,8 @@ export type MarketPlace = {
 	throttle: number;
 };
 
+export type RestartMode = 'auto' | 'none' | 'reload-windows' | 'restart-app' | 'restart-host';
+
 export type Source = FileSystem | Forgejo | GitHub | MarketPlace | 'github';
 
 export type UpdateResult = string | { name: string; version: string; updated: boolean } | undefined;

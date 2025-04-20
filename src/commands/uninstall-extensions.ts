@@ -2,6 +2,7 @@ import vscode from 'vscode';
 import { CONFIG_KEY, EXTENSION_ID, getDebugChannel } from '../settings.js';
 import { ExtensionManager } from '../utils/extension-manager.js';
 import { listExtensions } from '../utils/list-extensions.js';
+import { type RestartMode } from '../utils/types.js';
 
 export async function uninstallExtensions(): Promise<void> {
 	const config = vscode.workspace.getConfiguration(CONFIG_KEY);
@@ -19,7 +20,9 @@ export async function uninstallExtensions(): Promise<void> {
 
 	await extensionManager.startInstallSession();
 
-	await extensionManager.save(editorExtensions, debugChannel);
+	const restartMode = config.get<RestartMode>('restartMode') ?? 'auto';
+
+	await extensionManager.save(restartMode, editorExtensions, debugChannel);
 
 	debugChannel?.appendLine('done');
 }
