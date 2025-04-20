@@ -1,4 +1,5 @@
 import path from 'path';
+import { restartApp } from '@zokugun/vscode-utils';
 import fse from 'fs-extra';
 import vscode from 'vscode';
 import { GLOBAL_STORAGE } from '../settings.js';
@@ -6,7 +7,6 @@ import { arrayDiff } from './array-diff.js';
 import { disableExtension } from './disable-extension.js';
 import { enableExtension } from './enable-extension.js';
 import { getUserDataPath } from './get-user-data-path.js';
-// import { restartApp } from './restart-app';
 import type { ExtensionList } from './types.js';
 import { writeStateDB } from './write-statedb.js';
 
@@ -147,10 +147,10 @@ export class ExtensionManager {
 		});
 
 		if(restart) {
-			// await restartApp();
+			await restartApp();
 		}
 		else if(reload) {
-			// await vscode.commands.executeCommand('workbench.action.reloadWindow');
+			await vscode.commands.executeCommand('workbench.action.reloadWindow');
 		}
 	} // }}}
 
