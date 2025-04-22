@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.8.0 | 2025-04-21
+- add `restartMode` property to select on how to restart the extension host
+- better app restart, thanks to **@MeteorSkyOne**
+- update dependencies
+
 ## v0.7.2 | 2025-01-17
 - universal extensions are always installable
 
