@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.8.1 | 2025-04-23
+- add `forgejo` source, thanks to **@dxman**
+
 ## v0.8.0 | 2025-04-21
 - add `restartMode` property to select on how to restart the extension host
 - better app restart, thanks to **@MeteorSkyOne**
