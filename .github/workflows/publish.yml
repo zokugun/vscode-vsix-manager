@@ -69,8 +69,10 @@ jobs:
           npm install -g @vscode/vsce
           npm run package
           VSIX_NAME=$(ls *.vsix)
+          CHECKSUM=$(sha256sum $VSIX_NAME | cut -d ' ' -f 1)
           echo "VSIX_NAME=$VSIX_NAME" >> $GITHUB_ENV
-          echo "CHECKSUM=$(sha256sum $VSIX_NAME | cut -d ' ' -f 1)" >> $GITHUB_ENV
+          echo "CHECKSUM=$CHECKSUM" >> $GITHUB_ENV
+          echo "$CHECKSUM" > "$VSIX_NAME.sha256"
 
       - name: Get Changelog
         if: env.RELEASE_EXISTS == 'no'
@@ -86,7 +88,9 @@ jobs:
         if: env.RELEASE_EXISTS == 'no'
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ env.VSIX_NAME }}
+          files: |
+            ${{ env.VSIX_NAME }}
+            ${{ env.VSIX_NAME }}.sha256
           name: ${{ env.VERSION }}
           tag_name: ${{ env.VERSION }}
           body: |
