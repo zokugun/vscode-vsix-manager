@@ -23,6 +23,7 @@ jobs:
         id: build
         run: |
           npm ci
+          npm install -g @vscode/vsce
           npm run package
           VSIX_PATH=$(ls *.vsix)
           echo "VSIX_PATH=$VSIX_PATH" >> $GITHUB_ENV
