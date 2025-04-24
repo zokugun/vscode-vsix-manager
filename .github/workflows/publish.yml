@@ -22,6 +22,7 @@ jobs:
       - name: Get Version
         run: |
           # Get the latest tag
+          git fetch --tags
           LATEST_TAG=$(git describe --tags --abbrev=0)
           if [ -z "$LATEST_TAG" ]; then
             echo "No tags found in the repository"
