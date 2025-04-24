@@ -55,6 +55,7 @@ jobs:
         with:
           files: ${{ env.VSIX_PATH }}
           name: ${{ env.VERSION }}
+          tag_name: ${{ env.VERSION }}
           body: |
             Release ${{ env.VERSION }}
 
