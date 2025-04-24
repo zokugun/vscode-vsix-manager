@@ -19,18 +19,26 @@ jobs:
         with:
           node-version: 20
 
+      - name: Get Version
+        run: |
+          # Get the latest tag
+          LATEST_TAG=$(git describe --tags --abbrev=0)
+          if [ -z "$LATEST_TAG" ]; then
+            echo "No tags found in the repository"
+            exit 1
+          fi
+          echo "VERSION=$LATEST_TAG" >> $GITHUB_ENV
+          echo "Using version: $LATEST_TAG"
+
       - name: Build
-        id: build
         run: |
           npm ci
           npm install -g @vscode/vsce
           npm run package
           VSIX_PATH=$(ls *.vsix)
           echo "VSIX_PATH=$VSIX_PATH" >> $GITHUB_ENV
-          echo "VERSION=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
 
       - name: Get Changelog
-        id: changelog
         run: |
           CHANGELOG_ENTRY=$(node .github/scripts/get-changelog.js ${{ env.VERSION }})
           # Properly handle multiline output in GitHub Actions
