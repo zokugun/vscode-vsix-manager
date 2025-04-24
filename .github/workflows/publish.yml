@@ -11,20 +11,56 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm ci
+
+      - name: Build
+        id: build
+        run: |
+          npm ci
+          npm package
+          VSIX_PATH=$(ls *.vsix)
+          echo "VSIX_PATH=$VSIX_PATH" >> $GITHUB_ENV
+          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Get Changelog
+        id: changelog
+        run: |
+          CHANGELOG_ENTRY=$(node .github/scripts/get-changelog.js ${{ env.VERSION }})
+          # Properly handle multiline output in GitHub Actions
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "CHANGELOG_ENTRY<<$EOF" >> $GITHUB_ENV
+          echo "$CHANGELOG_ENTRY" >> $GITHUB_ENV
+          echo "$EOF" >> $GITHUB_ENV
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.VSIX_PATH }}
+          name: ${{ env.VERSION }}
+          body: |
+            Release ${{ env.VERSION }}
+
+            ## What's Changed
+            ${{ env.CHANGELOG_ENTRY }}
+
       - name: Publish to Open VSX Registry
         uses: HaaLeo/publish-vscode-extension@v2
         with:
+          extensionFile: ${{ env.VSIX_PATH }}
           pat: ${{ secrets.TOKEN_OPENVSX }}
           skipDuplicate: true
         if: env.PUBLISH_OPENVSX == 'yes'
+
       - name: Publish to Visual Studio Code Marketplace
         uses: HaaLeo/publish-vscode-extension@v2
         with:
+          extensionFile: ${{ env.VSIX_PATH }}
           pat: ${{ secrets.TOKEN_VSCODE }}
           registryUrl: https://marketplace.visualstudio.com
           skipDuplicate: true
