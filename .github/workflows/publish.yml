@@ -101,7 +101,7 @@ jobs:
 
             ## Installation
             1. [Download the .vsix file](${{ github.server_url }}/${{ github.repository }}/releases/download/${{ env.VERSION }}/${{ env.VSIX_NAME }})
-            2. In your editor, open the Command Palette (Meta+Shift+P)
+            2. In your editor, open the Command Palette (<kbd>Meta</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd>)
             3. Type `Install from VSIX` and select the downloaded file
 
             ## Checksum (SHA-256)
