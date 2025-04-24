@@ -52,6 +52,8 @@ jobs:
         run: |
           gh api ${{ env.VSIX_URL }} --header 'Accept: application/octet-stream' > extension.vsix
           echo "VSIX_PATH=extension.vsix" >> $GITHUB_ENV
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Setup Node.js
         if: env.RELEASE_EXISTS == 'no'
