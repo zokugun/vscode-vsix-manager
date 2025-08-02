@@ -2,15 +2,20 @@ import process from 'process';
 import type { GitHub } from '../utils/types.js';
 
 export function getReleasesUrl(extensionName: string, source: GitHub | undefined): string { // {{{
+	const serviceUrl = source?.serviceUrl ?? 'https://api.github.com';
 	if(source?.owner) {
-		return `https://api.github.com/repos/${source.owner}/${extensionName}/releases`;
+		return `${serviceUrl}/repos/${source.owner}/${extensionName}/releases`;
 	}
 	else {
-		return `https://api.github.com/repos/${extensionName}/releases`;
+		return `${serviceUrl}/repos/${extensionName}/releases`;
 	}
 } // }}}
 
-export function getHeaders(source: GitHub | undefined): {} | undefined { // {{{
+export function getAssetUrl(asset: unknown): string { // {{{
+	return (asset as { url: string }).url;
+} // }}}
+
+export function getHeaders(source: GitHub | undefined): { headers: {} } | undefined { // {{{
 	if(source?.token) {
 		let token: string | undefined = '';
 
@@ -31,4 +36,13 @@ export function getHeaders(source: GitHub | undefined): {} | undefined { // {{{
 	}
 
 	return undefined;
+} // }}}
+
+export function getDownloadHeaders(source: GitHub | undefined): { headers: {} } | undefined { // {{{
+	return {
+		headers: {
+			Accept: 'application/octet-stream',
+			...getHeaders(source)?.headers,
+		},
+	};
 } // }}}

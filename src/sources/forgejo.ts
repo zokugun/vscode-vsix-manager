@@ -10,6 +10,10 @@ export function getReleasesUrl(extensionName: string, source: Forgejo): string {
 	}
 } // }}}
 
+export function getAssetUrl(asset: unknown): string { // {{{
+	return (asset as { browser_download_url: string }).browser_download_url;
+} // }}}
+
 export function getHeaders(source: Forgejo): {} | undefined { // {{{
 	if(source.token) {
 		let token: string | undefined = '';
@@ -31,4 +35,8 @@ export function getHeaders(source: Forgejo): {} | undefined { // {{{
 	}
 
 	return undefined;
+} // }}}
+
+export function getDownloadHeaders(source: Forgejo): {} | undefined { // {{{
+	return getHeaders(source);
 } // }}}
