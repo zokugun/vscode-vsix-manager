@@ -12,6 +12,8 @@ type AssetInfo = {
 	url: string;
 };
 
+const NO_ASSET = { name: undefined, version: undefined, url: undefined };
+
 async function download(name: string, version: string, source: GitService | undefined, config: GitConfig, url: string, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
 	debugChannel?.appendLine(`downloading version: ${version}`);
 
@@ -28,11 +30,11 @@ async function download(name: string, version: string, source: GitService | unde
 	await fse.unlink(fileName);
 } // }}}
 
-async function findLatestAsset(extensionName: string, source: GitService | undefined, config: GitConfig, targetVersion?: string): Promise<AssetInfo | undefined> {
+async function findLatestAsset(extensionName: string, source: GitService | undefined, config: GitConfig, targetVersion?: string): Promise<AssetInfo | typeof NO_ASSET> { // {{{
 	const releases = await got.get(config.getReleasesUrl(extensionName, source), config.getHeaders(source)).json();
 
 	if(!releases || !Array.isArray(releases)) {
-		return undefined;
+		return NO_ASSET;
 	}
 
 	let name: string = '';
@@ -67,41 +69,33 @@ async function findLatestAsset(extensionName: string, source: GitService | undef
 		}
 	}
 
-	return version ? { name, version, url } : undefined;
-}
+	return version ? { name, version, url } : NO_ASSET;
+} // }}}
 
 export async function install(extensionName: string, extensionVersion: string | undefined, source: GitService | undefined, config: GitConfig, temporaryDir: string, enabled: boolean, debugChannel: vscode.OutputChannel | undefined): Promise<InstallResult> { // {{{
-	const assetInfo = await findLatestAsset(extensionName, source, config, extensionVersion);
+	const { name, version, url } = await findLatestAsset(extensionName, source, config, extensionVersion);
 
-	if(!assetInfo) {
+	if(!name) {
 		return;
 	}
 
-	await download(assetInfo.name, assetInfo.version, source, config, assetInfo.url, temporaryDir, debugChannel);
+	await download(name, version, source, config, url, temporaryDir, debugChannel);
 
-	return { name: assetInfo.name, version: assetInfo.version, enabled };
+	return { name, version, enabled };
 } // }}}
 
 export async function update(extensionName: string, currentVersion: string, source: GitService | undefined, config: GitConfig, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<UpdateResult> { // {{{
-	const assetInfo = await findLatestAsset(extensionName, source, config);
+	const { name, version, url } = await findLatestAsset(extensionName, source, config);
 
-	if(!assetInfo) {
+	if(!name) {
 		return;
 	}
 
-	if(semver.lte(assetInfo.version, currentVersion)) {
-		return {
-			name: assetInfo.name,
-			version: assetInfo.version,
-			updated: false,
-		};
+	if(semver.lte(version, currentVersion)) {
+		return { name, version, updated: true };
 	}
 
-	await download(assetInfo.name, assetInfo.version, source, config, assetInfo.url, temporaryDir, debugChannel);
+	await download(name, version, source, config, url, temporaryDir, debugChannel);
 
-	return {
-		name: assetInfo.name,
-		version: assetInfo.version,
-		updated: true,
-	};
+	return { name, version, updated: true };
 } // }}}
