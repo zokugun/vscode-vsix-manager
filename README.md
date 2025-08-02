@@ -185,6 +185,22 @@ For an extension named: `"mfs:extXYZ"`, it will for the files:
 }
 ```
 
+#### GitHub Enterprise
+
+```jsonc
+{
+    "vsix.sources": {
+        "ghe": {
+            "type": "github",
+            "url": "https://github.myserver.com/api/v3",
+        },
+    },
+    "vsix.extensions": [
+        "ghe:<username>/<project>",
+    ],
+}
+```
+
 #### Private repository
 
 You can access your private repositories by giving an access token. You can specify an environment variable to read it from.

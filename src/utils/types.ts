@@ -33,6 +33,7 @@ export type Forgejo = {
 
 export type GitHub = {
 	type: 'github';
+	serviceUrl?: string;
 	owner?: string;
 	token?: string;
 	fallback?: string;
@@ -41,7 +42,9 @@ export type GitHub = {
 export type GitService = Forgejo | GitHub;
 export type GitConfig = {
 	getHeaders(source: GitService | undefined): {} | undefined;
+	getDownloadHeaders(source: GitService | undefined): {} | undefined;
 	getReleasesUrl(extensionName: string, source: GitService | undefined): string;
+	getAssetUrl(asset: unknown): string;
 };
 
 export type InstallResult = { name: string; version: string; enabled: boolean } | undefined;
