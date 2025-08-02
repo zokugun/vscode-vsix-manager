@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.9.0 | 2025-08-02
+- add support to GitHub Enterprise, thanks to **@jameslan**
+
 ## v0.8.1 | 2025-04-23
 - add `forgejo` source, thanks to **@dxman**
 
