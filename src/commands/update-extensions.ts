@@ -4,7 +4,7 @@ import { dispatchUpdate } from '../utils/dispatch-update.js';
 import { ExtensionManager } from '../utils/extension-manager.js';
 import { listSources } from '../utils/list-sources.js';
 import { parse } from '../utils/parse.js';
-import type { Extension, RestartMode, Source } from '../utils/types.js';
+import type { Metadata, RestartMode, Source } from '../utils/types.js';
 
 export async function updateExtensions(): Promise<void> {
 	const config = vscode.workspace.getConfiguration(CONFIG_KEY);
@@ -61,7 +61,7 @@ async function updateExtension(data: unknown, sources: Record<string, Source> | 
 	}
 } // {{{
 
-async function updateExtensionWithSource(extension: Extension, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, extensionManager: ExtensionManager, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
+async function updateExtensionWithSource(extension: Metadata, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, extensionManager: ExtensionManager, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
 	debugChannel?.appendLine(`updating extension: ${extension.source!}:${extension.fullName}`);
 
 	if(extension.version) {
@@ -110,7 +110,7 @@ async function updateExtensionWithSource(extension: Extension, sources: Record<s
 	}
 } // }}}
 
-async function updateGroup(extension: Extension, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, extensionManager: ExtensionManager, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
+async function updateGroup(extension: Metadata, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, extensionManager: ExtensionManager, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
 	debugChannel?.appendLine(`updating group: ${extension.fullName}`);
 	if(!groups) {
 		debugChannel?.appendLine('no groups');

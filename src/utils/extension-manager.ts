@@ -118,10 +118,10 @@ export class ExtensionManager {
 
 			if(!this._canUninstallIndividually) {
 				if(editor!.builtin?.disabled) {
-					toDisable.push(...editor!.builtin.disabled.map((id) => ({ id })));
+					toDisable.push(...editor!.builtin.disabled.map(({ id }) => ({ id })));
 				}
 
-				toDisable.push(...arrayDiff(editor!.disabled, this._currentDisabled).map((id) => ({ id })));
+				toDisable.push(...arrayDiff(editor!.disabled.map(({ id }) => id), this._currentDisabled).map((id) => ({ id })));
 			}
 
 			this._currentInstalled = this._nextInstalled;
@@ -181,6 +181,13 @@ export class ExtensionManager {
 		else {
 			this._currentInstalled[id] = version;
 		}
+	} // }}}
+
+	public async startAdoptionSession(): Promise<void> { // {{{
+		this._nextInstalled = { ...this._currentInstalled };
+		this._nextDisabled = [...this._currentDisabled];
+
+		this._canUninstallIndividually = false;
 	} // }}}
 
 	public async startInstallSession(): Promise<void> { // {{{

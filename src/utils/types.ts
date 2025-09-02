@@ -1,20 +1,22 @@
-export type Extension = {
-	kind: ExtensionKind;
+export type Metadata = {
+	kind: MetadataKind;
 	fullName: string;
 	version?: string;
 	source?: string;
 	enabled: boolean;
 };
 
-export type ExtensionKind = 'extension' | 'group';
+export type MetadataKind = 'extension' | 'group';
+
+export type Extension = { id: string; version: string };
 
 export type ExtensionList = {
 	builtin?: {
-		disabled?: string[];
-		enabled?: string[];
+		disabled?: Extension[];
+		enabled?: Extension[];
 	};
-	disabled: string[];
-	enabled: string[];
+	disabled: Extension[];
+	enabled: Extension[];
 };
 
 export type FileSystem = {

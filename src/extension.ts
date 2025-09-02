@@ -1,5 +1,6 @@
 import vscode from 'vscode';
 import pkg from '../package.json';
+import { adoptExtensions } from './commands/adopt-extensions.js';
 import { installExtensions } from './commands/install-extensions.js';
 import { uninstallExtensions } from './commands/uninstall-extensions.js';
 import { updateExtensions } from './commands/update-extensions.js';
@@ -72,6 +73,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<VSIXMa
 	const disposables: vscode.Disposable[] = [];
 
 	disposables.push(
+		vscode.commands.registerCommand('vsix.adoptExtensions', adoptExtensions),
 		vscode.commands.registerCommand('vsix.installExtensions', installExtensions),
 		vscode.commands.registerCommand('vsix.uninstallExtensions', uninstallExtensions),
 		vscode.commands.registerCommand('vsix.updateExtensions', updateExtensions),

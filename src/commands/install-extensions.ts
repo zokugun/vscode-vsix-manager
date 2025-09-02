@@ -1,4 +1,4 @@
-import vscode from 'vscode';
+import * as vscode from 'vscode';
 import { CONFIG_KEY, EXTENSION_ID, getDebugChannel, TEMPORARY_DIR } from '../settings.js';
 import { dispatchInstall } from '../utils/dispatch-install.js';
 import { dispatchUpdate } from '../utils/dispatch-update.js';
@@ -6,7 +6,7 @@ import { ExtensionManager } from '../utils/extension-manager.js';
 import { listExtensions } from '../utils/list-extensions.js';
 import { listSources } from '../utils/list-sources.js';
 import { parse } from '../utils/parse.js';
-import type { Extension, ExtensionList, RestartMode, Source } from '../utils/types.js';
+import type { Metadata, ExtensionList, RestartMode, Source } from '../utils/types.js';
 
 export async function installExtensions(update: boolean = false): Promise<void> {
 	const result = await vscode.window.showInformationMessage(
@@ -80,45 +80,45 @@ async function installExtension(data: unknown, sources: Record<string, Source> |
 	}
 } // {{{
 
-async function installExtensionWithSource(extension: Extension, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, editorExtensions: ExtensionList, extensionManager: ExtensionManager, debugChannel: vscode.OutputChannel | undefined, update: boolean): Promise<boolean> { // {{{
-	debugChannel?.appendLine(`installing extension: ${extension.source!}:${extension.fullName}`);
+async function installExtensionWithSource(metadata: Metadata, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, editorExtensions: ExtensionList, extensionManager: ExtensionManager, debugChannel: vscode.OutputChannel | undefined, update: boolean): Promise<boolean> { // {{{
+	debugChannel?.appendLine(`installing extension: ${metadata.source!}:${metadata.fullName}`);
 
 	if(!sources) {
 		debugChannel?.appendLine('no sources');
 		return false;
 	}
 
-	const source = extension.source === 'github' ? extension.source : sources[extension.source!];
+	const source = metadata.source === 'github' ? metadata.source : sources[metadata.source!];
 	if(!source) {
-		debugChannel?.appendLine(`source "${extension.source!}" not found`);
+		debugChannel?.appendLine(`source "${metadata.source!}" not found`);
 		return false;
 	}
 
-	if(editorExtensions.disabled.includes(extension.fullName) || editorExtensions.enabled.includes(extension.fullName)) {
-		const currentVersion = extensionManager.getCurrentVersion(extension.fullName);
+	if(editorExtensions.disabled.some(({ id }) => id === metadata.fullName) || editorExtensions.enabled.some(({ id }) => id === metadata.fullName)) {
+		const currentVersion = extensionManager.getCurrentVersion(metadata.fullName);
 
 		// not null if the extension is managed by the manager
 		if(currentVersion) {
-			if(extension.enabled) {
-				if(!extensionManager.isEnabled(extension.fullName)) {
-					await extensionManager.flagEnabled(extension.fullName, debugChannel);
+			if(metadata.enabled) {
+				if(!extensionManager.isEnabled(metadata.fullName)) {
+					await extensionManager.flagEnabled(metadata.fullName, debugChannel);
 				}
 			}
 			else {
-				if(extensionManager.isEnabled(extension.fullName)) {
-					await extensionManager.unflagEnabled(extension.fullName, debugChannel);
+				if(extensionManager.isEnabled(metadata.fullName)) {
+					await extensionManager.unflagEnabled(metadata.fullName, debugChannel);
 				}
 			}
 
 			if(update) {
-				const result = await dispatchUpdate(extension.fullName, currentVersion, source, TEMPORARY_DIR, debugChannel);
+				const result = await dispatchUpdate(metadata.fullName, currentVersion, source, TEMPORARY_DIR, debugChannel);
 				if(!result) {
-					extensionManager.setInstalled(extension.fullName, currentVersion);
+					extensionManager.setInstalled(metadata.fullName, currentVersion);
 
 					debugChannel?.appendLine('no newer version found');
 				}
 				else if(typeof result === 'string') {
-					extensionManager.setInstalled(extension.fullName, result);
+					extensionManager.setInstalled(metadata.fullName, result);
 
 					debugChannel?.appendLine(`updated to version: ${result}`);
 				}
@@ -134,19 +134,19 @@ async function installExtensionWithSource(extension: Extension, sources: Record<
 				}
 			}
 			else {
-				extensionManager.setInstalled(extension.fullName, currentVersion);
+				extensionManager.setInstalled(metadata.fullName, currentVersion);
 
 				debugChannel?.appendLine('already installed');
 			}
 		}
 		else {
-			debugChannel?.appendLine('already installed');
+			debugChannel?.appendLine('already installed (unmanaged)');
 		}
 
 		return true;
 	}
 
-	const result = await dispatchInstall(extension.fullName, extension.version, source, sources, TEMPORARY_DIR, extension.enabled, debugChannel);
+	const result = await dispatchInstall(metadata.fullName, metadata.version, source, sources, TEMPORARY_DIR, metadata.enabled, debugChannel);
 
 	if(result) {
 		await extensionManager.addInstalled(result.name, result.version, result.enabled, debugChannel);
@@ -161,20 +161,26 @@ async function installExtensionWithSource(extension: Extension, sources: Record<
 	return true;
 } // }}}
 
-async function installExtensionWithoutSource(extension: Extension, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, editorExtensions: ExtensionList, extensionManager: ExtensionManager, debugChannel: vscode.OutputChannel | undefined, _update: boolean): Promise<boolean> { // {{{
-	debugChannel?.appendLine(`installing extension: ${extension.fullName}`);
+async function installExtensionWithoutSource(metadata: Metadata, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, editorExtensions: ExtensionList, extensionManager: ExtensionManager, debugChannel: vscode.OutputChannel | undefined, _update: boolean): Promise<boolean> { // {{{
+	debugChannel?.appendLine(`installing extension: ${metadata.fullName}`);
 
-	if(editorExtensions.disabled.includes(extension.fullName) || editorExtensions.enabled.includes(extension.fullName)) {
-		const currentVersion = extensionManager.getCurrentVersion(extension.fullName);
+	if(editorExtensions.disabled.some(({ id }) => id === metadata.fullName) || editorExtensions.enabled.some(({ id }) => id === metadata.fullName)) {
+		const currentVersion = extensionManager.getCurrentVersion(metadata.fullName);
 
-		await extensionManager.addInstalled(extension.fullName, currentVersion ?? '0.0.0', extension.enabled, debugChannel); // can be null if the extension hasn't been installed by the manager
+		// not null if the extension is managed by the manager
+		if(currentVersion) {
+			await extensionManager.addInstalled(metadata.fullName, currentVersion, metadata.enabled, debugChannel);
 
-		debugChannel?.appendLine('already installed');
+			debugChannel?.appendLine('already installed');
+		}
+		else {
+			debugChannel?.appendLine('already installed (unmanaged)');
+		}
 	}
 	else {
-		await vscode.commands.executeCommand('workbench.extensions.installExtension', extension.fullName);
+		await vscode.commands.executeCommand('workbench.extensions.installExtension', metadata.fullName);
 
-		await extensionManager.addInstalled(extension.fullName, '0.0.0', extension.enabled, debugChannel); // unknown version
+		await extensionManager.addInstalled(metadata.fullName, '0.0.0', metadata.enabled, debugChannel); // unknown version
 
 		debugChannel?.appendLine('installed');
 	}
@@ -182,16 +188,16 @@ async function installExtensionWithoutSource(extension: Extension, sources: Reco
 	return true;
 } // }}}
 
-async function installGroup(extension: Extension, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, editorExtensions: ExtensionList, extensionManager: ExtensionManager, debugChannel: vscode.OutputChannel | undefined, update: boolean): Promise<boolean> { // {{{
-	debugChannel?.appendLine(`installing group: ${extension.fullName}`);
+async function installGroup(metadata: Metadata, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, editorExtensions: ExtensionList, extensionManager: ExtensionManager, debugChannel: vscode.OutputChannel | undefined, update: boolean): Promise<boolean> { // {{{
+	debugChannel?.appendLine(`installing group: ${metadata.fullName}`);
 	if(!groups) {
 		debugChannel?.appendLine('no groups');
 		return false;
 	}
 
-	const extensions = groups[extension.fullName];
+	const extensions = groups[metadata.fullName];
 	if(!extensions) {
-		debugChannel?.appendLine(`group "${extension.fullName}" not found`);
+		debugChannel?.appendLine(`group "${metadata.fullName}" not found`);
 		return false;
 	}
 

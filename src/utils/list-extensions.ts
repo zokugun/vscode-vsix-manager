@@ -3,29 +3,29 @@ import fse from 'fs-extra';
 import globby from 'globby';
 import vscode from 'vscode';
 import { getExtensionDataPath } from './get-extension-data-path.js';
-import type { ExtensionList } from './types.js';
+import type { Extension, ExtensionList } from './types.js';
 
 export async function listExtensions(extensionId: string): Promise<ExtensionList> { // {{{
 	const builtin: {
-		disabled: string[];
+		disabled: Extension[];
 	} = {
 		disabled: [],
 	};
-	const disabled: string[] = [];
-	const enabled: string[] = [];
+	const disabled: Extension[] = [];
+	const enabled: Extension[] = [];
 
 	const ids: Record<string, boolean> = {};
 
 	for(const extension of vscode.extensions.all) {
 		const id = extension.id;
-		const packageJSON = extension.packageJSON as { isBuiltin: boolean; isUnderDevelopment: boolean; uuid: string };
+		const pkg = extension.packageJSON as { isBuiltin: boolean; isUnderDevelopment: boolean; version: string; uuid: string };
 
-		if(!packageJSON || packageJSON.isUnderDevelopment || id === extensionId) {
+		if(!pkg || pkg.isUnderDevelopment || id === extensionId) {
 			continue;
 		}
 
-		if(!packageJSON.isBuiltin) {
-			enabled.push(id);
+		if(!pkg.isBuiltin) {
+			enabled.push({ id, version: pkg.version });
 		}
 
 		ids[id] = true;
@@ -50,7 +50,7 @@ export async function listExtensions(extensionId: string): Promise<ExtensionList
 			continue;
 		}
 
-		const pkg = await fse.readJSON(path.join(extensionDataPath, packagePath)) as { name: string; publisher: string; __metadata: { id: string } };
+		const pkg = await fse.readJSON(path.join(extensionDataPath, packagePath)) as { name: string; publisher: string; version: string; __metadata: { id: string } };
 		const id = `${pkg.publisher}.${pkg.name}`;
 
 		if(obsolete[id]) {
@@ -58,7 +58,7 @@ export async function listExtensions(extensionId: string): Promise<ExtensionList
 		}
 
 		if(!ids[id] && id !== extensionId) {
-			disabled.push(id);
+			enabled.push({ id, version: pkg.version });
 		}
 	}
 
@@ -68,11 +68,11 @@ export async function listExtensions(extensionId: string): Promise<ExtensionList
 	});
 
 	for(const packagePath of builtinExtensions) {
-		const pkg = await fse.readJSON(path.join(builtinDataPath, packagePath)) as { name: string; publisher: string; __metadata: { id: string } };
+		const pkg = await fse.readJSON(path.join(builtinDataPath, packagePath)) as { name: string; publisher: string; version: string; __metadata: { id: string } };
 		const id = `${pkg.publisher}.${pkg.name}`;
 
 		if(!ids[id]) {
-			builtin.disabled.push(id);
+			builtin.disabled.push({ id, version: pkg.version });
 		}
 	}
 

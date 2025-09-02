@@ -1,7 +1,7 @@
-import type { Extension } from './types.js';
+import type { Metadata } from './types.js';
 
-export function parse(data: unknown): Extension[] {
-	const result: Extension[] = [];
+export function parse(data: unknown): Metadata[] {
+	const result: Metadata[] = [];
 
 	if(Array.isArray(data)) {
 		for(const d of data) {
@@ -17,7 +17,7 @@ export function parse(data: unknown): Extension[] {
 	return result;
 }
 
-function parseString(data: string, enabled: boolean | null, result: Extension[]): void {
+function parseString(data: string, enabled: boolean | null, result: Metadata[]): void {
 	if(enabled === null) {
 		if(data.startsWith('-')) {
 			enabled = false;
@@ -76,7 +76,7 @@ function parseString(data: string, enabled: boolean | null, result: Extension[])
 	}
 }
 
-function parseUniq(data: any, result: Extension[]): void {
+function parseUniq(data: any, result: Metadata[]): void {
 	if(!data) {
 		return;
 	}

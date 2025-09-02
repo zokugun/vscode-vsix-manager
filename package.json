@@ -78,6 +78,11 @@
 	"contributes": {
 		"commands": [
 			{
+				"command": "vsix.adoptExtensions",
+				"title": "Adopt unmanaged extensions",
+				"category": "VSIX Manager"
+			},
+			{
 				"command": "vsix.installExtensions",
 				"title": "Install extensions",
 				"category": "VSIX Manager"
