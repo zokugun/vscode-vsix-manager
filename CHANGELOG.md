@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.10.0 | 2025-09-02
+- add `vsix.adoptExtensions` command to bring extensions that are currently unmanaged under the control of VSIX Manager
+
 ## v0.9.0 | 2025-08-02
 - add support to GitHub Enterprise, thanks to **@jameslan**
 
