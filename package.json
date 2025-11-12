@@ -112,7 +112,6 @@
 						}
 					},
 					"default": {},
-					"scope": "application",
 					"tags": [
 						"vsix"
 					]
@@ -121,7 +120,6 @@
 					"type": "boolean",
 					"description": "Output debug logs",
 					"default": false,
-					"scope": "application",
 					"tags": [
 						"vsix"
 					]
@@ -158,7 +156,6 @@
 						}
 					],
 					"default": [],
-					"scope": "application",
 					"uniqueItems": true,
 					"tags": [
 						"vsix"
@@ -202,7 +199,6 @@
 						}
 					],
 					"default": {},
-					"scope": "application",
 					"uniqueItems": true,
 					"tags": [
 						"vsix"
@@ -224,7 +220,6 @@
 						"The new version notification will be shown only with a new minor version",
 						"The new version notification will always be shown"
 					],
-					"scope": "application",
 					"tags": [
 						"vsix"
 					]
@@ -247,7 +242,6 @@
 						"Restart the extension host",
 						"Restart the app"
 					],
-					"scope": "application",
 					"tags": [
 						"vsix"
 					]
@@ -289,7 +283,6 @@
 						}
 					],
 					"default": {},
-					"scope": "application",
 					"uniqueItems": true,
 					"tags": [
 						"vsix"
