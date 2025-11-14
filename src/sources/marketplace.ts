@@ -204,7 +204,12 @@ export async function updateMarketplace(extensionName: string, currentVersion: s
 function isCompatibleEngine(extension: Version): boolean { // {{{
 	for(const { key, value } of extension.properties) {
 		if(key === 'Microsoft.VisualStudio.Code.Engine') {
-			return semver.satisfies(vscode.version, value);
+			const minVersion = semver.minVersion(value);
+			if(!minVersion) {
+				continue;
+			}
+
+			return semver.gte(vscode.version, minVersion);
 		}
 	}
 
@@ -216,7 +221,12 @@ function getEngineVersion(extension: Version): string | null { // {{{
 
 	for(const { key, value } of extension.properties) {
 		if(key === 'Microsoft.VisualStudio.Code.Engine') {
-			if(semver.satisfies(vscode.version, value)) {
+			const minVersion = semver.minVersion(value);
+			if(!minVersion) {
+				continue;
+			}
+
+			if(semver.gte(vscode.version, minVersion)) {
 				return null;
 			}
 			else if(!min || semver.lt(value, min)) {
