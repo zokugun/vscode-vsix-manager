@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.10.1 | 2025-11-14
+- fix the version check when using an Insiders version of the editor
+
 ## v0.10.0 | 2025-09-02
 - add `vsix.adoptExtensions` command to bring extensions that are currently unmanaged under the control of VSIX Manager
 
