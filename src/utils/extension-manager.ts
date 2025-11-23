@@ -148,7 +148,7 @@ export class ExtensionManager {
 
 		if(restartMode === 'auto') {
 			if(restart) {
-				await vscode.commands.executeCommand('workbench.action.restartExtensionHost');
+				await restartApp();
 			}
 			else if(reload) {
 				await vscode.commands.executeCommand('workbench.action.reloadWindow');
