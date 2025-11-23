@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.10.2 | 2025-11-23
+- when `restartMode` equals `auto`, restart the app when disabling extensions
+
 ## v0.10.1 | 2025-11-14
 - fix the version check when using an Insiders version of the editor
 
