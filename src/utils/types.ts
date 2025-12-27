@@ -1,9 +1,10 @@
 export type Metadata = {
 	kind: MetadataKind;
-	fullName: string;
-	version?: string;
-	source?: string;
 	enabled: boolean;
+	fullName: string;
+	source?: string;
+	targetName?: string;
+	targetVersion?: string;
 };
 
 export type MetadataKind = 'extension' | 'group';

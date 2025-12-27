@@ -64,8 +64,8 @@ async function updateExtension(data: unknown, sources: Record<string, Source> | 
 async function updateExtensionWithSource(extension: Metadata, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, extensionManager: ExtensionManager, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
 	debugChannel?.appendLine(`updating extension: ${extension.source!}:${extension.fullName}`);
 
-	if(extension.version) {
-		debugChannel?.appendLine(`has specific version: ${extension.version}`);
+	if(extension.targetVersion) {
+		debugChannel?.appendLine(`has specific version: ${extension.targetVersion}`);
 		return;
 	}
 
@@ -86,7 +86,12 @@ async function updateExtensionWithSource(extension: Metadata, sources: Record<st
 		return;
 	}
 
-	const result = await dispatchUpdate(extension.fullName, currentVersion, source, TEMPORARY_DIR, debugChannel);
+	if(currentVersion === extension.targetVersion) {
+		debugChannel?.appendLine('expected version is already installed');
+		return;
+	}
+
+	const result = await dispatchUpdate(extension, currentVersion, source, TEMPORARY_DIR, debugChannel);
 
 	if(!result) {
 		extensionManager.setInstalled(extension.fullName, currentVersion);

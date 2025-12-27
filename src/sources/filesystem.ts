@@ -4,7 +4,7 @@ import globby from 'globby';
 import semver from 'semver';
 import untildify from 'untildify';
 import vscode from 'vscode';
-import type { FileSystem, InstallResult } from '../utils/types.js';
+import type { FileSystem, InstallResult, Metadata } from '../utils/types.js';
 
 async function find(root: string, extensionName: string, extensionVersion: string | undefined, debugChannel: vscode.OutputChannel | undefined): Promise<{ version: string; file: string }> { // {{{
 	const files = await globby('*.vsix', {
@@ -78,14 +78,14 @@ async function search(extensionName: string, extensionVersion: string | undefine
 	};
 } // }}}
 
-export async function installFileSystem(extensionName: string, extensionVersion: string | undefined, source: FileSystem, enabled: boolean, debugChannel: vscode.OutputChannel | undefined): Promise<InstallResult> { // {{{
+export async function installFileSystem({ fullName: extensionName, targetVersion, enabled }: Metadata, source: FileSystem, debugChannel: vscode.OutputChannel | undefined): Promise<InstallResult> { // {{{
 	const root = untildify(source.path);
 
 	if(!fse.existsSync(root)) {
 		return;
 	}
 
-	const { file, version } = await search(extensionName, extensionVersion, root, debugChannel);
+	const { file, version } = await search(extensionName, targetVersion, root, debugChannel);
 
 	if(file) {
 		debugChannel?.appendLine(`installing: ${file}`);
@@ -96,7 +96,7 @@ export async function installFileSystem(extensionName: string, extensionVersion:
 	}
 } // }}}
 
-export async function updateFileSystem(extensionName: string, currentVersion: string, source: FileSystem, debugChannel: vscode.OutputChannel | undefined): Promise<string | undefined> { // {{{
+export async function updateFileSystem({ fullName: extensionName }: Metadata, currentVersion: string, source: FileSystem, debugChannel: vscode.OutputChannel | undefined): Promise<string | undefined> { // {{{
 	const root = untildify(source.path);
 
 	if(!fse.existsSync(root)) {

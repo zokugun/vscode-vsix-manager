@@ -5,7 +5,7 @@ import fse from 'fs-extra';
 import got from 'got';
 import semver from 'semver';
 import vscode from 'vscode';
-import type { InstallResult, MarketPlace, Source } from '../utils/types.js';
+import type { InstallResult, MarketPlace, Metadata, Source } from '../utils/types.js';
 
 type Version = {
 	assetUri: string;
@@ -39,8 +39,9 @@ type QueryResult = {
 	}>;
 };
 
+const TARGET_PLATFORM = `${platform}-${arch}` as const;
+
 const $nextRequestAt: Record<string, number> = {};
-const targetPlatform = `${platform}-${arch}`;
 
 async function delayRequest(source: MarketPlace): Promise<void> { // {{{
 	let when = Date.now();
@@ -114,7 +115,7 @@ async function query(source: MarketPlace, extensionName: string): Promise<QueryR
 	}).json();
 } // }}}
 
-export async function installMarketplace(extensionName: string, extensionVersion: string | undefined, source: MarketPlace, sources: Record<string, Source>, temporaryDir: string, enabled: boolean, debugChannel: vscode.OutputChannel | undefined): Promise<InstallResult> { // {{{
+export async function installMarketplace({ fullName: extensionName, targetVersion, enabled }: Metadata, source: MarketPlace, sources: Record<string, Source>, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<InstallResult> { // {{{
 	if(source.throttle > 0) {
 		await delayRequest(source);
 	}
@@ -131,15 +132,15 @@ export async function installMarketplace(extensionName: string, extensionVersion
 			if(extension.extensionName === name && (extension.publisher.publisherName === publisher || extension.publisher.displayName === publisher)) {
 				for(const data of extension.versions) {
 					let version = data.version;
-					const matchedPlatform = data.targetPlatform ? data.targetPlatform === targetPlatform || data.targetPlatform === 'universal' : true;
+					const matchedPlatform = data.targetPlatform ? data.targetPlatform === TARGET_PLATFORM || data.targetPlatform === 'universal' : true;
 
 					if(version && matchedPlatform) {
 						let downloadUrl: string | null = null;
 
-						if(extensionVersion) {
-							debugChannel?.appendLine(`use specified version: ${extensionVersion}`);
+						if(targetVersion) {
+							debugChannel?.appendLine(`use specified version: ${targetVersion}`);
 
-							version = extensionVersion;
+							version = targetVersion;
 							downloadUrl = `${source.serviceUrl}/publishers/${publisher}/vsextensions/${name}/${version}/vspackage`;
 						}
 						else {
@@ -171,7 +172,7 @@ export async function installMarketplace(extensionName: string, extensionVersion
 	}
 } // }}}
 
-export async function updateMarketplace(extensionName: string, currentVersion: string, source: MarketPlace, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<string | undefined> { // {{{
+export async function updateMarketplace({ fullName: extensionName }: Metadata, currentVersion: string, source: MarketPlace, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<string | undefined> { // {{{
 	if(source.throttle > 0) {
 		await delayRequest(source);
 	}
@@ -186,7 +187,7 @@ export async function updateMarketplace(extensionName: string, currentVersion: s
 			if(extension.extensionName === name && (extension.publisher.publisherName === publisher || extension.publisher.displayName === publisher)) {
 				for(const extensionVersion of extension.versions) {
 					const version = extensionVersion.version;
-					const matchedPlatform = extensionVersion.targetPlatform ? extensionVersion.targetPlatform === targetPlatform : true;
+					const matchedPlatform = extensionVersion.targetPlatform ? extensionVersion.targetPlatform === TARGET_PLATFORM : true;
 
 					if(version && matchedPlatform && semver.gt(version, currentVersion) && isCompatibleEngine(extensionVersion)) {
 						const downloadUrl = getDownloadUrl(extensionName, version, source, extensionVersion);
