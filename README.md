@@ -173,7 +173,18 @@ For an extension named: `"mfs:extXYZ"`, it will for the files:
 - `~/my-extensions/extXYZ-<version>.vsix`
 - `~/my-extensions/extXYZ/extXYZ-<version>.vsix`
 
-### github
+### git
+
+#### Syntax
+
+Whether you use GitHub or Forgejo, a release can possibly contain multiple extensions and/or versions.
+
+If no version is specified (`github:<username>/<project>@<version>`), then the manager will select the latest.
+If the release contains multiple extensions and none are specified, it will select the first one.
+
+You can select the wanted extension like `github:<username>/<project>!<extension>` (`github:<username>/<project>!<extension>@<version>`).
+
+#### GitHub
 
 `github` is a built-in source (no configuration required) and will install extensions from the GitHub release pages.
 
@@ -235,7 +246,7 @@ You can access your private repositories by giving an access token. You can spec
 }
 ```
 
-### forgejo
+#### Forgejo
 
 `forgejo` is a built-in source and will install extensions from the Forgejo release pages.
 
@@ -249,42 +260,6 @@ You can access your private repositories by giving an access token. You can spec
     },
     "vsix.extensions": [
         "mfj:<username>/<project>",
-    ],
-}
-```
-
-#### Private repository
-
-You can access your private repositories by giving an access token. You can specify an environment variable to read it from.
-
-```jsonc
-{
-    "vsix.sources": {
-        "mfj": {
-            "type": "forgejo",
-            "serviceUrl": "https://forgejo.myserver.com/api/v1",
-            "token": "env:MY_TOKEN",
-        },
-    },
-    "vsix.extensions": [
-        "mfj:<username>/<project>",
-    ],
-}
-```
-
-#### Owner
-
-```jsonc
-{
-    "vsix.sources": {
-       "mfj": {
-            "type": "forgejo",
-            "serviceUrl": "https://forgejo.myserver.com/api/v1",
-            "owner": "<username>",
-        },
-    },
-    "vsix.extensions": [
-        "mfj:<project>",
     ],
 }
 ```

@@ -39,16 +39,17 @@ function parseString(data: string, enabled: boolean | null, result: Metadata[]):
 	}
 
 	if(data.includes(':')) {
-		const matches = /^([^:]*):(.*?)(?:@(\d+\.\d+\.\d+))?$/.exec(data);
+		const matches = /^([^:]*):(.*?)(?:!([^@]+))?(?:@(\d+\.\d+\.\d+))?$/.exec(data);
 
 		if(matches) {
-			const [, source, fullName, version] = matches;
+			const [, source, fullName, target, version] = matches;
 
 			result.push({
 				kind: 'extension',
 				source,
 				fullName,
-				version,
+				targetName: target,
+				targetVersion: version,
 				enabled,
 			});
 		}
@@ -62,7 +63,7 @@ function parseString(data: string, enabled: boolean | null, result: Metadata[]):
 			result.push({
 				kind: 'extension',
 				fullName,
-				version,
+				targetVersion: version,
 				enabled,
 			});
 		}

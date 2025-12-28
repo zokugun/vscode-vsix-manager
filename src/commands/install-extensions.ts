@@ -111,7 +111,13 @@ async function installExtensionWithSource(metadata: Metadata, sources: Record<st
 			}
 
 			if(update) {
-				const result = await dispatchUpdate(metadata.fullName, currentVersion, source, TEMPORARY_DIR, debugChannel);
+				if(currentVersion === metadata.targetVersion) {
+					debugChannel?.appendLine('expected version is already installed');
+					return true;
+				}
+
+				const result = await dispatchUpdate(metadata, currentVersion, source, TEMPORARY_DIR, debugChannel);
+
 				if(!result) {
 					extensionManager.setInstalled(metadata.fullName, currentVersion);
 
@@ -146,7 +152,7 @@ async function installExtensionWithSource(metadata: Metadata, sources: Record<st
 		return true;
 	}
 
-	const result = await dispatchInstall(metadata.fullName, metadata.version, source, sources, TEMPORARY_DIR, metadata.enabled, debugChannel);
+	const result = await dispatchInstall(metadata, source, sources, TEMPORARY_DIR, debugChannel);
 
 	if(result) {
 		await extensionManager.addInstalled(result.name, result.version, result.enabled, debugChannel);
