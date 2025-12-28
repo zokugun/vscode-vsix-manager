@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.11.0 | 2025-12-28
+- when using git, improve matching by:
+  - checking release name for version (so that the version isn't need in the archive name)
+  - using the platform to select the archive
+- rename `vsix.restartMode` setting to `vsix.restart.mode`
+- add `vsix.restart.confirm` setting to bypass the confirmation window
+
 ## v0.10.2 | 2025-11-23
 - when `restartMode` equals `auto`, restart the app when disabling extensions
 
