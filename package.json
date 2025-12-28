@@ -229,7 +229,16 @@
 						"vsix"
 					]
 				},
-				"vsix.restartMode": {
+				"vsix.restart.confirm": {
+					"type": "boolean",
+					"description": "Confirm with the user that the editor might restart or reload.",
+					"default": true,
+					"scope": "application",
+					"tags": [
+						"vsix"
+					]
+				},
+				"vsix.restart.mode": {
 					"type": "string",
 					"description": "Select how to restart the extension host (only for advanced users, should be left on 'auto')",
 					"default": "auto",

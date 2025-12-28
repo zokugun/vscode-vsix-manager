@@ -4,10 +4,16 @@ import { dispatchUpdate } from '../utils/dispatch-update.js';
 import { ExtensionManager } from '../utils/extension-manager.js';
 import { listSources } from '../utils/list-sources.js';
 import { parse } from '../utils/parse.js';
+import { showRestartModal } from '../utils/show-restart-modal.js';
 import type { Metadata, RestartMode, Source } from '../utils/types.js';
 
 export async function updateExtensions(): Promise<void> {
 	const config = vscode.workspace.getConfiguration(CONFIG_KEY);
+
+	if(!await showRestartModal(config)) {
+		return;
+	}
+
 	const debug = config.get<boolean>('debug') ?? false;
 	const debugChannel = getDebugChannel(debug);
 
@@ -31,7 +37,7 @@ export async function updateExtensions(): Promise<void> {
 		await updateExtension(extension, sources, groups, extensionManager, debugChannel);
 	}
 
-	const restartMode = config.get<RestartMode>('restartMode') ?? 'auto';
+	const restartMode = config.get<RestartMode>('restart.mode') ?? 'auto';
 
 	await extensionManager.save(restartMode);
 

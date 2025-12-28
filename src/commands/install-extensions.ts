@@ -6,22 +6,16 @@ import { ExtensionManager } from '../utils/extension-manager.js';
 import { listExtensions } from '../utils/list-extensions.js';
 import { listSources } from '../utils/list-sources.js';
 import { parse } from '../utils/parse.js';
+import { showRestartModal } from '../utils/show-restart-modal.js';
 import type { Metadata, ExtensionList, RestartMode, Source } from '../utils/types.js';
 
 export async function installExtensions(update: boolean = false): Promise<void> {
-	const result = await vscode.window.showInformationMessage(
-		'The editor might restart or reload. Do you want to continue?',
-		{
-			modal: true,
-		},
-		'Yes',
-	);
+	const config = vscode.workspace.getConfiguration(CONFIG_KEY);
 
-	if(!result) {
+	if(!await showRestartModal(config)) {
 		return;
 	}
 
-	const config = vscode.workspace.getConfiguration(CONFIG_KEY);
 	const debug = config.get<boolean>('debug') ?? false;
 	const debugChannel = getDebugChannel(debug);
 
@@ -48,7 +42,7 @@ export async function installExtensions(update: boolean = false): Promise<void> 
 		await installExtension(extension, sources, groups, editorExtensions, extensionManager, debugChannel, update);
 	}
 
-	const restartMode = config.get<RestartMode>('restartMode') ?? 'auto';
+	const restartMode = config.get<RestartMode>('restart.mode') ?? 'auto';
 
 	await extensionManager.save(restartMode, editorExtensions, debugChannel);
 
