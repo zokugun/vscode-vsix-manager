@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
+import { EXTENSION_NAME } from '../utils/constants.js';
 
-export async function showRestartModal(config: vscode.WorkspaceConfiguration): Promise<boolean> {
+export async function confirmRestartMessage(config: vscode.WorkspaceConfiguration): Promise<boolean> {
 	const confirm = config.get<boolean>('restart.confirm') ?? true;
 
 	if(!confirm) {
@@ -8,7 +9,7 @@ export async function showRestartModal(config: vscode.WorkspaceConfiguration): P
 	}
 
 	const result = await vscode.window.showInformationMessage(
-		'The editor might restart or reload. Do you want to continue?',
+		`Source: ${EXTENSION_NAME}\n\nThe editor might restart or reload. Do you want to continue?`,
 		{
 			modal: true,
 		},

@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
+import { ExtensionManager } from '../extensions/extension-manager.js';
+import { listExtensions } from '../extensions/list-extensions.js';
 import { CONFIG_KEY, EXTENSION_ID, getDebugChannel } from '../settings.js';
-import { ExtensionManager } from '../utils/extension-manager.js';
-import { listExtensions } from '../utils/list-extensions.js';
+import { type ExtensionList, type Metadata, type Source } from '../types.js';
 import { listSources } from '../utils/list-sources.js';
-import { parse } from '../utils/parse.js';
-import { type ExtensionList, type Metadata, type Source } from '../utils/types.js';
+import { parseMetadata } from '../utils/parse-metadata.js';
 
 type Adopted = { id: string; version: string; enabled: boolean };
 
@@ -65,7 +65,7 @@ export async function adoptExtensions(): Promise<void> {
 }
 
 async function adoptExtension(data: unknown, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, editorExtensions: ExtensionList, extensionManager: ExtensionManager, adopteds: Adopted[], debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
-	for(const extension of parse(data)) {
+	for(const extension of parseMetadata(data)) {
 		try {
 			if(extension.kind === 'group') {
 				if(await adoptGroup(extension, sources, groups, editorExtensions, extensionManager, adopteds, debugChannel)) {

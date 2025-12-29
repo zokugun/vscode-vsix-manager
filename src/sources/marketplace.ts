@@ -5,7 +5,7 @@ import fse from 'fs-extra';
 import got from 'got';
 import semver from 'semver';
 import vscode from 'vscode';
-import type { InstallResult, MarketPlace, Metadata, Source } from '../utils/types.js';
+import type { InstallResult, MarketPlace, Metadata, Source } from '../types.js';
 
 type Version = {
 	assetUri: string;

@@ -4,7 +4,7 @@ import globby from 'globby';
 import semver from 'semver';
 import untildify from 'untildify';
 import vscode from 'vscode';
-import type { FileSystem, InstallResult, Metadata } from '../utils/types.js';
+import type { FileSystem, InstallResult, Metadata } from '../types.js';
 
 async function find(root: string, extensionName: string, extensionVersion: string | undefined, debugChannel: vscode.OutputChannel | undefined): Promise<{ version: string; file: string }> { // {{{
 	const files = await globby('*.vsix', {

@@ -4,7 +4,7 @@ import * as Forgejo from '../sources/forgejo.js';
 import * as Git from '../sources/git.js';
 import * as GitHub from '../sources/github.js';
 import { updateMarketplace } from '../sources/marketplace.js';
-import type { Metadata, Source, UpdateResult } from './types.js';
+import type { Metadata, Source, UpdateResult } from '../types.js';
 
 export async function dispatchUpdate(extension: Metadata, currentVersion: string, source: Source, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<UpdateResult> {
 	if(source === 'github') {

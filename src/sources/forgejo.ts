@@ -1,5 +1,5 @@
 import process from 'process';
-import type { Forgejo } from '../utils/types.js';
+import type { Forgejo } from '../types.js';
 
 export function getReleasesUrl(extensionName: string, source: Forgejo): string { // {{{
 	if(source.owner) {

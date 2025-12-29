@@ -1,14 +1,14 @@
 import vscode from 'vscode';
+import { ExtensionManager } from '../extensions/extension-manager.js';
+import { listExtensions } from '../extensions/list-extensions.js';
+import { confirmRestartMessage } from '../modals/confirm-restart-message.js';
 import { CONFIG_KEY, EXTENSION_ID, getDebugChannel } from '../settings.js';
-import { ExtensionManager } from '../utils/extension-manager.js';
-import { listExtensions } from '../utils/list-extensions.js';
-import { showRestartModal } from '../utils/show-restart-modal.js';
-import { type RestartMode } from '../utils/types.js';
+import { type RestartMode } from '../types.js';
 
 export async function uninstallExtensions(): Promise<void> {
 	const config = vscode.workspace.getConfiguration(CONFIG_KEY);
 
-	if(!await showRestartModal(config)) {
+	if(!await confirmRestartMessage(config)) {
 		return;
 	}
 

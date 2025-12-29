@@ -1,5 +1,5 @@
 import process from 'process';
-import type { GitHub } from '../utils/types.js';
+import type { GitHub } from '../types.js';
 
 export function getReleasesUrl(extensionName: string, source: GitHub | undefined): string { // {{{
 	const serviceUrl = source?.serviceUrl ?? 'https://api.github.com';

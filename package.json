@@ -34,7 +34,7 @@
 		"watch": "tsc-watch -p src --onSuccess 'npm run bundle'"
 	},
 	"dependencies": {
-		"@zokugun/vscode-utils": "^0.1.0",
+		"@zokugun/vscode-utils": "^0.2.0",
 		"fs-extra": "^10.0.1",
 		"globby": "^11.1.0",
 		"got": "^11.8.6",

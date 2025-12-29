@@ -4,7 +4,7 @@ import * as Forgejo from '../sources/forgejo.js';
 import * as Git from '../sources/git.js';
 import * as GitHub from '../sources/github.js';
 import { installMarketplace } from '../sources/marketplace.js';
-import type { InstallResult, Metadata, Source } from './types.js';
+import type { InstallResult, Metadata, Source } from '../types.js';
 
 export async function dispatchInstall(metadata: Metadata, source: Source, sources: Record<string, Source> | undefined, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<InstallResult> {
 	if(source === 'github') {

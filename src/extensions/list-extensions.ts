@@ -2,8 +2,8 @@ import path from 'path';
 import fse from 'fs-extra';
 import globby from 'globby';
 import vscode from 'vscode';
-import { getExtensionDataPath } from './get-extension-data-path.js';
-import type { Extension, ExtensionList } from './types.js';
+import { getExtensionDataPath } from '../paths/get-extension-data-path.js';
+import type { Extension, ExtensionList } from '../types.js';
 
 export async function listExtensions(extensionId: string): Promise<ExtensionList> { // {{{
 	const builtin: {
