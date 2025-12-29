@@ -52,12 +52,6 @@ export type GitConfig = {
 
 export type InstallResult = { name: string; version: string; enabled: boolean } | undefined;
 
-export type MarketPlaceOld = {
-	kind: 'marketplace';
-	serviceUrl: string;
-	itemUrl: string;
-};
-
 export type MarketPlace = {
 	type: 'marketplace';
 	serviceUrl: string;

@@ -3,7 +3,6 @@ import { ExtensionManager } from '../extensions/extension-manager.js';
 import { listExtensions } from '../extensions/list-extensions.js';
 import { CONFIG_KEY, EXTENSION_ID, getDebugChannel } from '../settings.js';
 import { type ExtensionList, type Metadata, type Source } from '../types.js';
-import { listSources } from '../utils/list-sources.js';
 import { parseMetadata } from '../utils/parse-metadata.js';
 
 type Adopted = { id: string; version: string; enabled: boolean };
@@ -22,7 +21,7 @@ export async function adoptExtensions(): Promise<void> {
 		return;
 	}
 
-	const sources = listSources(config);
+	const sources = config.get<Record<string, Source>>('sources');
 	const groups = config.get<Record<string, unknown[]>>('groups');
 
 	const editorExtensions = await listExtensions(EXTENSION_ID);

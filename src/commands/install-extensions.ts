@@ -6,7 +6,6 @@ import { CONFIG_KEY, EXTENSION_ID, getDebugChannel, TEMPORARY_DIR } from '../set
 import type { Metadata, ExtensionList, RestartMode, Source } from '../types.js';
 import { dispatchInstall } from '../utils/dispatch-install.js';
 import { dispatchUpdate } from '../utils/dispatch-update.js';
-import { listSources } from '../utils/list-sources.js';
 import { parseMetadata } from '../utils/parse-metadata.js';
 
 export async function installExtensions(update: boolean = false): Promise<void> {
@@ -28,7 +27,7 @@ export async function installExtensions(update: boolean = false): Promise<void> 
 		return;
 	}
 
-	const sources = listSources(config);
+	const sources = config.get<Record<string, Source>>('sources');
 	const groups = config.get<Record<string, unknown[]>>('groups');
 
 	const editorExtensions = await listExtensions(EXTENSION_ID);
