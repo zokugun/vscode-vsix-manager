@@ -1,6 +1,6 @@
-import type { Metadata } from './types.js';
+import type { Metadata } from '../types.js';
 
-export function parse(data: unknown): Metadata[] {
+export function parseMetadata(data: unknown): Metadata[] {
 	const result: Metadata[] = [];
 
 	if(Array.isArray(data)) {

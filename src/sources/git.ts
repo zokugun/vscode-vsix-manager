@@ -5,7 +5,7 @@ import fse from 'fs-extra';
 import got from 'got';
 import semver from 'semver';
 import vscode from 'vscode';
-import type { GitConfig, GitService, InstallResult, Metadata, UpdateResult } from '../utils/types.js';
+import type { GitConfig, GitService, InstallResult, Metadata, UpdateResult } from '../types.js';
 
 type AssetInfo = {
 	name: string;

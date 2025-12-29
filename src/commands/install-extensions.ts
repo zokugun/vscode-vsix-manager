@@ -1,18 +1,18 @@
 import * as vscode from 'vscode';
+import { ExtensionManager } from '../extensions/extension-manager.js';
+import { listExtensions } from '../extensions/list-extensions.js';
+import { confirmRestartMessage } from '../modals/confirm-restart-message.js';
 import { CONFIG_KEY, EXTENSION_ID, getDebugChannel, TEMPORARY_DIR } from '../settings.js';
+import type { Metadata, ExtensionList, RestartMode, Source } from '../types.js';
 import { dispatchInstall } from '../utils/dispatch-install.js';
 import { dispatchUpdate } from '../utils/dispatch-update.js';
-import { ExtensionManager } from '../utils/extension-manager.js';
-import { listExtensions } from '../utils/list-extensions.js';
 import { listSources } from '../utils/list-sources.js';
-import { parse } from '../utils/parse.js';
-import { showRestartModal } from '../utils/show-restart-modal.js';
-import type { Metadata, ExtensionList, RestartMode, Source } from '../utils/types.js';
+import { parseMetadata } from '../utils/parse-metadata.js';
 
 export async function installExtensions(update: boolean = false): Promise<void> {
 	const config = vscode.workspace.getConfiguration(CONFIG_KEY);
 
-	if(!await showRestartModal(config)) {
+	if(!await confirmRestartMessage(config)) {
 		return;
 	}
 
@@ -50,7 +50,7 @@ export async function installExtensions(update: boolean = false): Promise<void> 
 }
 
 async function installExtension(data: unknown, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, editorExtensions: ExtensionList, extensionManager: ExtensionManager, debugChannel: vscode.OutputChannel | undefined, update: boolean): Promise<void> { // {{{
-	for(const extension of parse(data)) {
+	for(const extension of parseMetadata(data)) {
 		try {
 			if(extension.kind === 'group') {
 				if(await installGroup(extension, sources, groups, editorExtensions, extensionManager, debugChannel, update)) {

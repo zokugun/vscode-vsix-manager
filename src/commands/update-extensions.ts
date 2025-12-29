@@ -1,16 +1,16 @@
 import vscode from 'vscode';
+import { ExtensionManager } from '../extensions/extension-manager.js';
+import { confirmRestartMessage } from '../modals/confirm-restart-message.js';
 import { CONFIG_KEY, getDebugChannel, TEMPORARY_DIR } from '../settings.js';
+import type { Metadata, RestartMode, Source } from '../types.js';
 import { dispatchUpdate } from '../utils/dispatch-update.js';
-import { ExtensionManager } from '../utils/extension-manager.js';
 import { listSources } from '../utils/list-sources.js';
-import { parse } from '../utils/parse.js';
-import { showRestartModal } from '../utils/show-restart-modal.js';
-import type { Metadata, RestartMode, Source } from '../utils/types.js';
+import { parseMetadata } from '../utils/parse-metadata.js';
 
 export async function updateExtensions(): Promise<void> {
 	const config = vscode.workspace.getConfiguration(CONFIG_KEY);
 
-	if(!await showRestartModal(config)) {
+	if(!await confirmRestartMessage(config)) {
 		return;
 	}
 
@@ -45,7 +45,7 @@ export async function updateExtensions(): Promise<void> {
 }
 
 async function updateExtension(data: unknown, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, extensionManager: ExtensionManager, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
-	for(const extension of parse(data)) {
+	for(const extension of parseMetadata(data)) {
 		try {
 			if(extension.kind === 'group') {
 				await updateGroup(extension, sources, groups, extensionManager, debugChannel);

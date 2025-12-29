@@ -2,13 +2,14 @@ import path from 'path';
 import { restartApp } from '@zokugun/vscode-utils';
 import fse from 'fs-extra';
 import vscode from 'vscode';
+import { getUserDataPath } from '../paths/get-user-data-path.js';
 import { GLOBAL_STORAGE } from '../settings.js';
-import { arrayDiff } from './array-diff.js';
+import type { ExtensionList, RestartMode } from '../types.js';
+import { arrayDiff } from '../utils/array-diff.js';
+import { EXTENSION_NAME } from '../utils/constants.js';
+import { writeStateDB } from '../utils/write-statedb.js';
 import { disableExtension } from './disable-extension.js';
 import { enableExtension } from './enable-extension.js';
-import { getUserDataPath } from './get-user-data-path.js';
-import type { ExtensionList, RestartMode } from './types.js';
-import { writeStateDB } from './write-statedb.js';
 
 async function canManageExtensions(): Promise<boolean> { // {{{
 	const commands = await vscode.commands.getCommands();
@@ -148,7 +149,7 @@ export class ExtensionManager {
 
 		if(restartMode === 'auto') {
 			if(restart) {
-				await restartApp();
+				await restartApp(EXTENSION_NAME);
 			}
 			else if(reload) {
 				await vscode.commands.executeCommand('workbench.action.reloadWindow');
@@ -164,7 +165,7 @@ export class ExtensionManager {
 		}
 		else if(restartMode === 'restart-app') {
 			if(restart || reload) {
-				await restartApp();
+				await restartApp(EXTENSION_NAME);
 			}
 		}
 		else if(restartMode === 'restart-host') {
