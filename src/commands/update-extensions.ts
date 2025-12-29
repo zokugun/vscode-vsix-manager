@@ -4,7 +4,6 @@ import { confirmRestartMessage } from '../modals/confirm-restart-message.js';
 import { CONFIG_KEY, getDebugChannel, TEMPORARY_DIR } from '../settings.js';
 import type { Metadata, RestartMode, Source } from '../types.js';
 import { dispatchUpdate } from '../utils/dispatch-update.js';
-import { listSources } from '../utils/list-sources.js';
 import { parseMetadata } from '../utils/parse-metadata.js';
 
 export async function updateExtensions(): Promise<void> {
@@ -26,7 +25,7 @@ export async function updateExtensions(): Promise<void> {
 		return;
 	}
 
-	const sources = listSources(config);
+	const sources = config.get<Record<string, Source>>('sources');
 	const groups = config.get<Record<string, string[]>>('groups');
 
 	const extensionManager = new ExtensionManager();
