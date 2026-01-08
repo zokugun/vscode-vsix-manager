@@ -54,13 +54,21 @@
 				"format": [
 					"camelCase",
 					"UPPER_CASE"
-				]
+				],
+				"filter": {
+					"regex": "^(__filename|__dirname)$",
+					"match": false
+				}
 			},
 			{
 				"selector": "variable",
 				"format": [
 					"camelCase"
-				]
+				],
+				"filter": {
+					"regex": "^(__filename|__dirname)$",
+					"match": false
+				}
 			}
 		],
 		"@typescript-eslint/no-confusing-void-expression": "off",
@@ -71,6 +79,9 @@
 			"error",
 			"always"
 		],
+		"@typescript-eslint/parameter-properties": "off",
+		"@typescript-eslint/prefer-promise-reject-errors": "off",
+		"@typescript-eslint/return-await": "off",
 		"arrow-parens": [
 			"error",
 			"always"
@@ -120,6 +131,7 @@
 		],
 		"unicorn/empty-brace-spaces": "off",
 		"unicorn/no-array-callback-reference": "off",
+		"unicorn/no-length-as-slice-end": "off",
 		"unicorn/no-lonely-if": "off",
 		"unicorn/no-object-as-default-parameter": "off",
 		"unicorn/numeric-separators-style": [
@@ -140,11 +152,18 @@
 			"error",
 			{
 				"replacements": {
+					"arg": false,
 					"args": false,
 					"dir": false,
 					"err": false,
+					"fn": false,
 					"func": false,
-					"pkg": false
+					"i": false,
+					"j": false,
+					"mod": false,
+					"num": false,
+					"pkg": false,
+					"str": false
 				}
 			}
 		]
