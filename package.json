@@ -25,7 +25,6 @@
 	"scripts": {
 		"bundle": "ncc build out/extension --out lib --external sql.js",
 		"clean": "rimraf lib out",
-		"commit": "cz",
 		"compile:src": "tsc -p src",
 		"lint": "xo",
 		"lint:fix": "xo --fix",
@@ -55,11 +54,10 @@
 		"@types/sql.js": "^1.4.2",
 		"@types/vscode": "^1.23.0",
 		"@vercel/ncc": "^0.38.3",
-		"commitizen": "^4.3.1",
 		"fixpack": "^4.0.0",
 		"husky": "^9.1.7",
 		"lint-staged": "^16.1.4",
-		"release-it": "^18.1.2",
+		"release-it": "^19.2.4",
 		"tsc-watch": "^6.3.0",
 		"typescript": "^5.7.3",
 		"xo": "0.60.0"

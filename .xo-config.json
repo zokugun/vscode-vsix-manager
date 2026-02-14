@@ -1,6 +1,7 @@
 {
 	"ignores": [
-		"*.config.js"
+		"*.config.js",
+		"*.config.ts"
 	],
 	"rules": {
 		"@typescript-eslint/ban-types": "off",
