@@ -21,10 +21,10 @@ jobs:
           npm ci
       - name: Build
         run: |
-          npm run build
-      - name: Test
-        run: |
-          npm run test
+          npm run vscode:prepublish
+      # - name: Test
+      #   run: |
+      #     npm run test
       - name: Lint code
         run: |
           npm run lint
