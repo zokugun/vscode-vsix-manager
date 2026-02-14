@@ -36,8 +36,11 @@
 		"watch:src": "tsc-watch -p src --onSuccess 'npm run bundle'"
 	},
 	"dependencies": {
+		"@zokugun/fs-extra-plus": "^0.3.2",
+		"@zokugun/is-it-type": "^0.5.1",
 		"@zokugun/vscode-utils": "^0.2.0",
-		"fs-extra": "^10.0.1",
+		"@zokugun/xtry": "^0.10.1",
+		"@zokugun/yauzl-plus": "^0.1.0",
 		"globby": "^11.1.0",
 		"got": "^11.8.6",
 		"semver": "^7.3.5",
@@ -47,7 +50,6 @@
 	"devDependencies": {
 		"@commitlint/cli": "^19.7.1",
 		"@commitlint/config-conventional": "^19.7.1",
-		"@types/fs-extra": "^9.0.12",
 		"@types/node": "^20.14.8",
 		"@types/semver": "^7.3.8",
 		"@types/sql.js": "^1.4.2",
@@ -86,7 +88,7 @@
 			},
 			{
 				"command": "vsix.installExtensions",
-				"title": "Install extensions",
+				"title": "Synchronize extensions",
 				"category": "VSIX Manager"
 			},
 			{
@@ -96,7 +98,7 @@
 			},
 			{
 				"command": "vsix.updateExtensions",
-				"title": "Update extensions",
+				"title": "Update only installed extensions",
 				"category": "VSIX Manager"
 			}
 		],
@@ -258,6 +260,15 @@
 						"Restart the extension host",
 						"Restart the app"
 					],
+					"scope": "application",
+					"tags": [
+						"vsix"
+					]
+				},
+				"vsix.showErrorAlert": {
+					"type": "boolean",
+					"description": "Show an alert when an error occurs.",
+					"default": true,
 					"scope": "application",
 					"tags": [
 						"vsix"

@@ -1,11 +1,12 @@
 import path from 'path';
-import fse from 'fs-extra';
+import fse from '@zokugun/fs-extra-plus/async';
+import { err, ok, type Result } from '@zokugun/xtry';
 import globby from 'globby';
 import vscode from 'vscode';
 import { getExtensionDataPath } from '../paths/get-extension-data-path.js';
 import type { Extension, ExtensionList } from '../types.js';
 
-export async function listExtensions(extensionId: string): Promise<ExtensionList> { // {{{
+export async function listExtensions(extensionId: string): Promise<Result<ExtensionList, string>> { // {{{
 	const builtin: {
 		disabled: Extension[];
 	} = {
@@ -33,7 +34,19 @@ export async function listExtensions(extensionId: string): Promise<ExtensionList
 
 	const extensionDataPath = await getExtensionDataPath();
 	const obsoletePath = path.join(extensionDataPath, '.obsolete');
-	const obsolete = await fse.pathExists(obsoletePath) ? await fse.readJSON(obsoletePath) as Record<string, boolean> : {};
+
+	let obsolete: Record<string, boolean> = {};
+
+	const exists = await fse.pathExists(obsoletePath);
+	if(exists.value) {
+		const result = await fse.readJSON(obsoletePath);
+		if(result.fails) {
+			return err(`Cannot read the file ${obsoletePath}`);
+		}
+
+		obsolete = result.value as Record<string, boolean>;
+	}
+
 	const extensions = await globby('*/package.json', {
 		cwd: extensionDataPath,
 	});
@@ -50,7 +63,12 @@ export async function listExtensions(extensionId: string): Promise<ExtensionList
 			continue;
 		}
 
-		const pkg = await fse.readJSON(path.join(extensionDataPath, packagePath)) as { name: string; publisher: string; version: string; __metadata: { id: string } };
+		const result = await fse.readJSON(path.join(extensionDataPath, packagePath));
+		if(result.fails) {
+			return err(`Cannot read the extension: ${packagePath}`);
+		}
+
+		const pkg = result.value as { name: string; publisher: string; version: string; __metadata: { id: string } };
 		const id = `${pkg.publisher}.${pkg.name}`;
 
 		if(obsolete[id]) {
@@ -68,7 +86,12 @@ export async function listExtensions(extensionId: string): Promise<ExtensionList
 	});
 
 	for(const packagePath of builtinExtensions) {
-		const pkg = await fse.readJSON(path.join(builtinDataPath, packagePath)) as { name: string; publisher: string; version: string; __metadata: { id: string } };
+		const result = await fse.readJSON(path.join(builtinDataPath, packagePath));
+		if(result.fails) {
+			return err(`Cannot read the extension: ${packagePath}`);
+		}
+
+		const pkg = result.value as { name: string; publisher: string; version: string; __metadata: { id: string } };
 		const id = `${pkg.publisher}.${pkg.name}`;
 
 		if(!ids[id]) {
@@ -77,9 +100,9 @@ export async function listExtensions(extensionId: string): Promise<ExtensionList
 	}
 
 	if(builtin.disabled.length > 0) {
-		return { builtin, disabled, enabled };
+		return ok({ builtin, disabled, enabled });
 	}
 	else {
-		return { disabled, enabled };
+		return ok({ disabled, enabled });
 	}
 } // }}}

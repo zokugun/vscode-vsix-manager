@@ -1,11 +1,12 @@
 import path from 'path';
-import { platform, arch } from 'process';
 import { pipeline } from 'stream/promises';
-import fse from 'fs-extra';
+import fse from '@zokugun/fs-extra-plus/async';
 import got from 'got';
 import semver from 'semver';
 import vscode from 'vscode';
-import type { InstallResult, MarketPlace, Metadata, Source } from '../types.js';
+import { TARGET_PLATFORM } from '../settings.js';
+import type { MarketPlace, Metadata, SearchResult } from '../types.js';
+import { Logger } from '../utils/logger.js';
 
 type Version = {
 	assetUri: string;
@@ -39,8 +40,6 @@ type QueryResult = {
 	}>;
 };
 
-const TARGET_PLATFORM = `${platform}-${arch}` as const;
-
 const $nextRequestAt: Record<string, number> = {};
 
 async function delayRequest(source: MarketPlace): Promise<void> { // {{{
@@ -58,8 +57,8 @@ async function delayRequest(source: MarketPlace): Promise<void> { // {{{
 	$nextRequestAt[source.serviceUrl] = when + source.throttle;
 } // }}}
 
-async function download(extensionName: string, version: string, platform: string | undefined, downloadUrl: string, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
-	debugChannel?.appendLine(`downloading version: ${version}, platform: ${platform ?? 'universal'}`);
+async function download(extensionName: string, version: string, platform: string | undefined, downloadUrl: string, temporaryDir: string): Promise<string> { // {{{
+	Logger.info(`downloading version: ${version}, platform: ${platform ?? 'universal'}`);
 
 	const fileName = path.join(temporaryDir, `${extensionName}-${version}.vsix`);
 
@@ -69,9 +68,7 @@ async function download(extensionName: string, version: string, platform: string
 
 	await pipeline(gotStream, outStream);
 
-	await vscode.commands.executeCommand('workbench.extensions.installExtension', vscode.Uri.file(fileName));
-
-	await fse.unlink(fileName);
+	return fileName;
 } // }}}
 
 function getDownloadUrl(extensionName: string, version: string, source: MarketPlace, { files }: { files: Array<{ assetType: string; source: string }> }): string { // {{{
@@ -115,7 +112,7 @@ async function query(source: MarketPlace, extensionName: string): Promise<QueryR
 	}).json();
 } // }}}
 
-export async function installMarketplace({ fullName: extensionName, targetVersion, enabled }: Metadata, source: MarketPlace, sources: Record<string, Source>, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<InstallResult> { // {{{
+export async function search({ fullName: extensionName, targetVersion }: Metadata, source: MarketPlace, temporaryDir: string): Promise<SearchResult | undefined> { // {{{
 	if(source.throttle > 0) {
 		await delayRequest(source);
 	}
@@ -131,17 +128,21 @@ export async function installMarketplace({ fullName: extensionName, targetVersio
 		for(const extension of extensions) {
 			if(extension.extensionName === name && (extension.publisher.publisherName === publisher || extension.publisher.displayName === publisher)) {
 				for(const data of extension.versions) {
-					let version = data.version;
+					const version = data.version;
+
+					if(targetVersion && version !== targetVersion) {
+						continue;
+					}
+
 					const matchedPlatform = data.targetPlatform ? data.targetPlatform === TARGET_PLATFORM || data.targetPlatform === 'universal' : true;
 
-					if(version && matchedPlatform) {
+					if(version && matchedPlatform && isCompatibleEngine(data)) {
 						let downloadUrl: string | null = null;
 
 						if(targetVersion) {
-							debugChannel?.appendLine(`use specified version: ${targetVersion}`);
+							Logger.info(`use specified version: ${targetVersion}`);
 
-							version = targetVersion;
-							downloadUrl = `${source.serviceUrl}/publishers/${publisher}/vsextensions/${name}/${version}/vspackage`;
+							downloadUrl = getDownloadUrl(extensionName, version, source, data);
 						}
 						else {
 							const engineVersion = getEngineVersion(data);
@@ -157,9 +158,14 @@ export async function installMarketplace({ fullName: extensionName, targetVersio
 						}
 
 						if(version && downloadUrl) {
-							await download(extensionName, version, data.targetPlatform, downloadUrl, temporaryDir, debugChannel);
+							const file = await download(extensionName, version, data.targetPlatform, downloadUrl, temporaryDir);
 
-							return { name: extensionName, version, enabled };
+							return {
+								fullName: extensionName,
+								version,
+								file,
+								unlink: file,
+							};
 						}
 					}
 				}
@@ -167,37 +173,7 @@ export async function installMarketplace({ fullName: extensionName, targetVersio
 		}
 
 		if(minEngineVersion) {
-			debugChannel?.appendLine(`the extension requires an IDE with the minimum version of "${minEngineVersion}"`);
-		}
-	}
-} // }}}
-
-export async function updateMarketplace({ fullName: extensionName }: Metadata, currentVersion: string, source: MarketPlace, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<string | undefined> { // {{{
-	if(source.throttle > 0) {
-		await delayRequest(source);
-	}
-
-	const result = await query(source, extensionName);
-	const extensions = result.results[0]?.extensions;
-
-	if(extensions) {
-		const [publisher, name] = extensionName.split('.');
-
-		for(const extension of extensions) {
-			if(extension.extensionName === name && (extension.publisher.publisherName === publisher || extension.publisher.displayName === publisher)) {
-				for(const extensionVersion of extension.versions) {
-					const version = extensionVersion.version;
-					const matchedPlatform = extensionVersion.targetPlatform ? extensionVersion.targetPlatform === TARGET_PLATFORM : true;
-
-					if(version && matchedPlatform && semver.gt(version, currentVersion) && isCompatibleEngine(extensionVersion)) {
-						const downloadUrl = getDownloadUrl(extensionName, version, source, extensionVersion);
-
-						await download(extensionName, version, extensionVersion.targetPlatform, downloadUrl, temporaryDir, debugChannel);
-
-						return version;
-					}
-				}
-			}
+			Logger.info(`the extension requires an IDE with the minimum version of "${minEngineVersion}"`);
 		}
 	}
 } // }}}

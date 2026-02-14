@@ -1,7 +1,8 @@
 import vscode from 'vscode';
+import { Logger } from '../utils/logger.js';
 
-export async function enableExtension(id: string, debugChannel: vscode.OutputChannel | undefined): Promise<boolean> {
-	debugChannel?.appendLine(`enable: ${id}`);
+export async function enableExtension(id: string): Promise<boolean> {
+	Logger.info(`enable: ${id}`);
 
 	try {
 		await vscode.commands.executeCommand('workbench.extensions.enableExtension', id);

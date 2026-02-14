@@ -1,10 +1,13 @@
+import semver from 'semver';
 import vscode from 'vscode';
 import { ExtensionManager } from '../extensions/extension-manager.js';
+import { installIntoEditor } from '../extensions/install-into-editor.js';
 import { confirmRestartMessage } from '../modals/confirm-restart-message.js';
-import { CONFIG_KEY, getDebugChannel, TEMPORARY_DIR } from '../settings.js';
-import type { Metadata, RestartMode, Source } from '../types.js';
-import { dispatchUpdate } from '../utils/dispatch-update.js';
+import { CONFIG_KEY, TEMPORARY_DIR } from '../settings.js';
+import type { Metadata, RestartMode, SearchResult, Source } from '../types.js';
+import { Logger } from '../utils/logger.js';
 import { parseMetadata } from '../utils/parse-metadata.js';
+import { search } from '../utils/search.js';
 
 export async function updateExtensions(): Promise<void> {
 	const config = vscode.workspace.getConfiguration(CONFIG_KEY);
@@ -13,12 +16,7 @@ export async function updateExtensions(): Promise<void> {
 		return;
 	}
 
-	const debug = config.get<boolean>('debug') ?? false;
-	const debugChannel = getDebugChannel(debug);
-
-	if(debugChannel) {
-		debugChannel.show(true);
-	}
+	Logger.setup(true);
 
 	const extensions = config.get<unknown[]>('extensions');
 	if(!extensions) {
@@ -33,25 +31,29 @@ export async function updateExtensions(): Promise<void> {
 	await extensionManager.load();
 
 	for(const extension of extensions) {
-		await updateExtension(extension, sources, groups, extensionManager, debugChannel);
+		await updateExtension(extension, sources, groups, extensionManager);
 	}
 
 	const restartMode = config.get<RestartMode>('restart.mode') ?? 'auto';
 
-	await extensionManager.save(restartMode);
+	const saveResult = await extensionManager.save(restartMode);
+	if(saveResult.fails) {
+		Logger.error(saveResult.error);
+		return;
+	}
 
-	debugChannel?.appendLine('done');
+	Logger.info('done');
 }
 
-async function updateExtension(data: unknown, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, extensionManager: ExtensionManager, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
+async function updateExtension(data: unknown, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, extensionManager: ExtensionManager): Promise<void> { // {{{
 	for(const extension of parseMetadata(data)) {
 		try {
 			if(extension.kind === 'group') {
-				await updateGroup(extension, sources, groups, extensionManager, debugChannel);
+				await updateGroup(extension, sources, groups, extensionManager);
 			}
 			else if(extensionManager.hasInstalled(extension.fullName)) {
 				if(extension.source) {
-					await updateExtensionWithSource(extension, sources, groups, extensionManager, debugChannel);
+					await updateExtensionWithSource(extension, sources, groups, extensionManager);
 				}
 				else {
 					// skip, managed by the editor
@@ -61,84 +63,100 @@ async function updateExtension(data: unknown, sources: Record<string, Source> | 
 			}
 		}
 		catch (error: unknown) {
-			debugChannel?.appendLine(String(error));
+			Logger.error(error);
 		}
 	}
-} // {{{
+} // }}}
 
-async function updateExtensionWithSource(extension: Metadata, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, extensionManager: ExtensionManager, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
-	debugChannel?.appendLine(`updating extension: ${extension.source!}:${extension.fullName}`);
+async function updateExtensionWithSource(metadata: Metadata, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, extensionManager: ExtensionManager): Promise<void> { // {{{
+	Logger.info(`updating extension: ${metadata.source!}:${metadata.fullName}`);
 
-	if(extension.targetVersion) {
-		debugChannel?.appendLine(`has specific version: ${extension.targetVersion}`);
+	if(metadata.targetVersion) {
+		Logger.info(`has specific version: ${metadata.targetVersion}`);
 		return;
 	}
 
 	if(!sources) {
-		debugChannel?.appendLine('no sources');
+		Logger.info('no sources');
 		return;
 	}
 
-	const source = extension.source === 'github' ? extension.source : sources[extension.source!];
+	const source = metadata.source === 'github' ? metadata.source : sources[metadata.source!];
 	if(!source) {
-		debugChannel?.appendLine(`source "${extension.source!}" not found`);
+		Logger.info(`source "${metadata.source!}" not found`);
 		return;
 	}
 
-	const currentVersion = extensionManager.getCurrentVersion(extension.fullName);
-	if(!currentVersion) {
-		debugChannel?.appendLine('not managed');
-		return;
-	}
+	let result: SearchResult | undefined;
+	let extensionName: string;
 
-	if(currentVersion === extension.targetVersion) {
-		debugChannel?.appendLine('expected version is already installed');
-		return;
-	}
+	if(source === 'github' || source.type !== 'marketplace') {
+		result = await search(metadata, source, sources, TEMPORARY_DIR);
 
-	const result = await dispatchUpdate(extension, currentVersion, source, TEMPORARY_DIR, debugChannel);
+		if(!result) {
+			Logger.info('not found');
 
-	if(!result) {
-		extensionManager.setInstalled(extension.fullName, currentVersion);
+			return;
+		}
 
-		debugChannel?.appendLine('no newer version found');
-	}
-	else if(typeof result === 'string') {
-		extensionManager.setInstalled(extension.fullName, result);
-
-		debugChannel?.appendLine(`updated to version: ${result}`);
-	}
-	else if(result.updated) {
-		extensionManager.setInstalled(result.name, result.version);
-
-		debugChannel?.appendLine(`updated to version: ${result.version}`);
+		extensionName = result.fullName;
 	}
 	else {
-		extensionManager.setInstalled(result.name, result.version);
+		extensionName = metadata.fullName;
+	}
 
-		debugChannel?.appendLine('no newer version found');
+	const currentVersion = extensionManager.getCurrentVersion(extensionName);
+	if(!currentVersion) {
+		Logger.info('not managed');
+		return;
+	}
+
+	if(currentVersion === metadata.targetVersion) {
+		Logger.info('expected version is already installed');
+		return;
+	}
+
+	result ??= await search(metadata, source, sources, TEMPORARY_DIR);
+
+	if(!result) {
+		Logger.info('not found');
+
+		return;
+	}
+
+	if(semver.gt(result.version, currentVersion)) {
+		await installIntoEditor(result);
+
+		extensionManager.setInstalled(extensionName, result.version);
+
+		Logger.info(`updated to version: ${result.version}`);
+	}
+	else {
+		extensionManager.setInstalled(extensionName, currentVersion);
+
+		Logger.info('no newer version found');
 	}
 } // }}}
 
-async function updateGroup(extension: Metadata, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, extensionManager: ExtensionManager, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
-	debugChannel?.appendLine(`updating group: ${extension.fullName}`);
+async function updateGroup(extension: Metadata, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, extensionManager: ExtensionManager): Promise<void> { // {{{
+	Logger.info(`updating group: ${extension.fullName}`);
 	if(!groups) {
-		debugChannel?.appendLine('no groups');
+		Logger.info('no groups');
 		return;
 	}
 
 	const extensions = groups[extension.fullName];
 	if(!extensions) {
-		debugChannel?.appendLine(`group "${extension.fullName}" not found`);
+		Logger.info(`group "${extension.fullName}" not found`);
 		return;
 	}
 
 	for(const extension of extensions) {
 		try {
-			await updateExtension(extension, sources, groups, extensionManager, debugChannel);
+			await updateExtension(extension, sources, groups, extensionManager);
 		}
 		catch (error: unknown) {
-			debugChannel?.appendLine(String(error));
+			Logger.info(String(error));
 		}
 	}
 } // }}}

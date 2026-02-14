@@ -1,23 +1,24 @@
 import path from 'path';
-import { platform, arch } from 'process';
 import { pipeline } from 'stream/promises';
-import fse from 'fs-extra';
+import fse from '@zokugun/fs-extra-plus/async';
 import got from 'got';
 import semver from 'semver';
-import vscode from 'vscode';
-import type { GitConfig, GitService, InstallResult, Metadata, UpdateResult } from '../types.js';
+import { TARGET_PLATFORM } from '../settings.js';
+import type { GitConfig, GitService, PartialSearchResult, Metadata } from '../types.js';
+import { Logger } from '../utils/logger.js';
+import { parseAssetName } from '../utils/parse-asset-name.js';
 
 type AssetInfo = {
 	name: string;
 	version: string;
+	platform?: string;
 	url: string;
 };
 
-const NO_ASSET = { name: undefined, version: undefined, url: undefined };
-const TARGET_PLATFORM = `${platform}-${arch}` as const;
+const NO_ASSET = { name: undefined, version: undefined, platform: undefined, url: undefined };
 
-async function download(name: string, version: string, source: GitService | undefined, config: GitConfig, url: string, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
-	debugChannel?.appendLine(`downloading version: ${version}`);
+async function download(name: string, version: string, platform: string | undefined, source: GitService | undefined, config: GitConfig, url: string, temporaryDir: string): Promise<string> { // {{{
+	Logger.info(`downloading version: ${version}, platform: ${platform ?? 'universal'}`);
 
 	const fileName = path.join(temporaryDir, `${name}-${version}.vsix`);
 
@@ -27,9 +28,7 @@ async function download(name: string, version: string, source: GitService | unde
 
 	await pipeline(gotStream, outStream);
 
-	await vscode.commands.executeCommand('workbench.extensions.installExtension', vscode.Uri.file(fileName));
-
-	await fse.unlink(fileName);
+	return fileName;
 } // }}}
 
 async function findLatestAsset({ fullName: repoName, targetName, targetVersion }: Metadata, source: GitService | undefined, config: GitConfig): Promise<AssetInfo | typeof NO_ASSET> { // {{{
@@ -41,7 +40,7 @@ async function findLatestAsset({ fullName: repoName, targetName, targetVersion }
 
 	let name: string = targetName ?? '';
 	let version: string = targetVersion ?? '';
-	let platform: string = '';
+	let platform: string | undefined;
 	let url: string = '';
 
 	for(const release of releases) {
@@ -64,11 +63,11 @@ async function findLatestAsset({ fullName: repoName, targetName, targetVersion }
 
 							if(!name) {
 								name = result.name;
-								platform = result.platform ?? '';
+								platform = result.platform;
 								url = config.getAssetUrl(asset);
 							}
 							else if(name === result.name) {
-								platform = result.platform ?? '';
+								platform = result.platform;
 								url = config.getAssetUrl(asset);
 							}
 
@@ -99,12 +98,12 @@ async function findLatestAsset({ fullName: repoName, targetName, targetVersion }
 					if(!name) {
 						name = result.name;
 						version = releaseVersion;
-						platform = result.platform ?? '';
+						platform = result.platform;
 						url = config.getAssetUrl(asset);
 					}
 					else if(name === result.name) {
 						version = releaseVersion;
-						platform = result.platform ?? '';
+						platform = result.platform;
 						url = config.getAssetUrl(asset);
 					}
 
@@ -138,20 +137,20 @@ async function findLatestAsset({ fullName: repoName, targetName, targetVersion }
 
 							name = result.name;
 							version = result.version;
-							platform = result.platform ?? '';
+							platform = result.platform;
 							url = config.getAssetUrl(asset);
 						}
 					}
 					else if(!name) {
 						name = result.name;
 						version = result.version;
-						platform = result.platform ?? '';
+						platform = result.platform;
 						url = config.getAssetUrl(asset);
 					}
 					else if(name === result.name) {
 						if(semver.gt(result.version, version)) {
 							version = result.version;
-							platform = result.platform ?? '';
+							platform = result.platform;
 							url = config.getAssetUrl(asset);
 						}
 						else if(semver.eq(result.version, version)) {
@@ -159,7 +158,7 @@ async function findLatestAsset({ fullName: repoName, targetName, targetVersion }
 								continue;
 							}
 
-							platform = result.platform ?? '';
+							platform = result.platform;
 							url = config.getAssetUrl(asset);
 						}
 					}
@@ -168,60 +167,17 @@ async function findLatestAsset({ fullName: repoName, targetName, targetVersion }
 		}
 	}
 
-	return url ? { name, version, url } : NO_ASSET;
+	return url ? { name, version, platform, url } : NO_ASSET;
 } // }}}
 
-export async function install(metadata: Metadata, source: GitService | undefined, config: GitConfig, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<InstallResult> { // {{{
-	const { name, version, url } = await findLatestAsset(metadata, source, config);
+export async function search(metadata: Metadata, source: GitService | undefined, config: GitConfig, temporaryDir: string): Promise<PartialSearchResult | undefined> { // {{{
+	const { name, version, platform, url } = await findLatestAsset(metadata, source, config);
 
 	if(!name) {
 		return;
 	}
 
-	await download(name, version, source, config, url, temporaryDir, debugChannel);
+	const file = await download(name, version, platform, source, config, url, temporaryDir);
 
-	return { name, version, enabled: metadata.enabled };
-} // }}}
-
-export async function update(metadata: Metadata, currentVersion: string, source: GitService | undefined, config: GitConfig, temporaryDir: string, debugChannel: vscode.OutputChannel | undefined): Promise<UpdateResult> { // {{{
-	const { name, version, url } = await findLatestAsset(metadata, source, config);
-
-	if(!name) {
-		return;
-	}
-
-	if(semver.lte(version, currentVersion)) {
-		return { name, version, updated: true };
-	}
-
-	await download(name, version, source, config, url, temporaryDir, debugChannel);
-
-	return { name, version, updated: true };
-} // }}}
-
-function parseAssetName(assetName: string): { name: string; platform?: string; version?: string } | undefined { // {{{
-	if(!assetName.endsWith('.vsix')) {
-		return undefined;
-	}
-
-	const result: { name: string; platform?: string; version?: string } = { name: '' };
-	let left2parse = assetName.slice(0, Math.max(0, assetName.length - 5));
-	let match = /^(.*?)-(\d+\.\d+\.\d+)/.exec(left2parse);
-
-	if(match) {
-		left2parse = match[1];
-		result.version = match[2];
-	}
-
-	match = /^(.*?)-((?:alpine|darwin|linux|win32)-[a-z][a-z\d]+|universal)/.exec(left2parse);
-
-	if(match) {
-		result.name = match[1];
-		result.platform = match[2];
-	}
-	else {
-		result.name = left2parse;
-	}
-
-	return result;
+	return { version, file, unlink: file };
 } // }}}
