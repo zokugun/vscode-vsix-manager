@@ -31,7 +31,7 @@
 		"package": "rm -f *.vsix && vsce package",
 		"prepare": "husky; fixpack || true",
 		"release": "release-it",
-		"vscode:prepublish": "npm run compile compile:src && npm run bundle",
+		"vscode:prepublish": "npm run compile:src && npm run bundle",
 		"watch:src": "tsc-watch -p src --onSuccess 'npm run bundle'"
 	},
 	"dependencies": {
