@@ -1,24 +1,20 @@
 name: Publish Extension
-
 on:
-  workflow_dispatch:
+  workflow_dispatch: null
   push:
     tags:
       - "*"
-
 env:
   PUBLISH_OPENVSX: ${{ vars.PUBLISH_OPENVSX }}
   PUBLISH_VSCODE: ${{ vars.PUBLISH_VSCODE }}
-
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Get Version
         run: |
           # Get the latest tag
@@ -29,7 +25,6 @@ jobs:
           fi
           echo "VERSION=$LATEST_TAG" >> $GITHUB_ENV
           echo "Using version: $LATEST_TAG"
-
       - name: Check Existing Release
         run: |
           # Try to get the release information
@@ -49,7 +44,6 @@ jobs:
           fi
         env:
           GH_TOKEN: ${{ github.token }}
-
       - name: Download Existing VSIX
         if: env.RELEASE_EXISTS == 'yes' && env.VSIX_URL != ''
         run: |
@@ -57,13 +51,11 @@ jobs:
           echo "CHECKSUM=$(sha256sum ${{ env.VSIX_NAME }} | cut -d ' ' -f 1)" >> $GITHUB_ENV
         env:
           GH_TOKEN: ${{ github.token }}
-
       - name: Setup Node.js
         if: env.RELEASE_EXISTS == 'no'
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: 20
-
       - name: Build
         if: env.RELEASE_EXISTS == 'no'
         run: |
@@ -75,7 +67,6 @@ jobs:
           echo "VSIX_NAME=$VSIX_NAME" >> $GITHUB_ENV
           echo "CHECKSUM=$CHECKSUM" >> $GITHUB_ENV
           echo "$CHECKSUM" > "$VSIX_NAME.sha256"
-
       - name: Get Changelog
         if: env.RELEASE_EXISTS == 'no'
         run: |
@@ -118,7 +109,6 @@ jobs:
           extensionFile: ${{ env.VSIX_NAME }}
           pat: ${{ secrets.TOKEN_OPENVSX }}
           skipDuplicate: true
-
       - name: Publish to Visual Studio Code Marketplace
         if: env.PUBLISH_VSCODE == 'yes'
         uses: HaaLeo/publish-vscode-extension@v2

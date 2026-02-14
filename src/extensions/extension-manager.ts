@@ -1,12 +1,14 @@
 import path from 'path';
+import fse from '@zokugun/fs-extra-plus/async';
 import { restartApp } from '@zokugun/vscode-utils';
-import fse from 'fs-extra';
+import { err, OK, type Result } from '@zokugun/xtry';
 import vscode from 'vscode';
 import { getUserDataPath } from '../paths/get-user-data-path.js';
 import { GLOBAL_STORAGE } from '../settings.js';
 import type { ExtensionList, RestartMode } from '../types.js';
 import { arrayDiff } from '../utils/array-diff.js';
 import { EXTENSION_NAME } from '../utils/constants.js';
+import { Logger } from '../utils/logger.js';
 import { writeStateDB } from '../utils/write-statedb.js';
 import { disableExtension } from './disable-extension.js';
 import { enableExtension } from './enable-extension.js';
@@ -33,22 +35,22 @@ export class ExtensionManager {
 		this._currentDisabled = [];
 	} // }}}
 
-	public async addInstalled(id: string, version: string, enabled: boolean, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
+	public async addInstalled(id: string, version: string, enabled: boolean): Promise<void> { // {{{
 		this._nextInstalled![id] = version;
 
 		if(!enabled) {
 			this._nextDisabled!.push(id);
 
 			if(!this._currentDisabled.includes(id) && this._canUninstallIndividually) {
-				await disableExtension(id, debugChannel);
+				await disableExtension(id);
 			}
 		}
 	} // }}}
 
-	public async flagEnabled(id: string, debugChannel: vscode.OutputChannel | undefined): Promise<void> { // {{{
+	public async flagEnabled(id: string): Promise<void> { // {{{
 		if(this._currentDisabled.includes(id)) {
 			if(this._canUninstallIndividually) {
-				await enableExtension(id, debugChannel);
+				await enableExtension(id);
 			}
 			else {
 				this._forceUpdateDisabled = true;
@@ -76,25 +78,32 @@ export class ExtensionManager {
 		return arrayDiff(Object.keys(this._currentInstalled), Object.keys(this._nextInstalled!));
 	} // }}}
 
-	public async load() { // {{{
-		await fse.ensureFile(this._extensionsFileName);
+	public async load(): Promise<Result<void, string>> { // {{{
+		const ensureResult = await fse.ensureFile(this._extensionsFileName);
+		if(ensureResult.fails) {
+			return err(`Cannot ensure the file ${this._extensionsFileName}`);
+		}
 
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-		const data = await fse.readJson(this._extensionsFileName, { throws: false }) ?? {};
+		const dataResult = await fse.readJson(this._extensionsFileName);
+		if(dataResult.fails) {
+			return err(`Cannot read the file ${this._extensionsFileName}`);
+		}
+
+		const data: { installed?: Record<string, string>; disabled?: string[] } = dataResult.value ?? {};
 
 		if(data.installed && data.disabled) {
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 			this._currentInstalled = data.installed;
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
 			this._currentDisabled = data.disabled;
 		}
 		else {
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-			this._currentInstalled = data;
+			this._currentInstalled = data as Record<string, string>;
 		}
+
+		return OK;
 	} // }}}
 
-	public async save(restartMode: RestartMode, editor?: ExtensionList, debugChannel?: vscode.OutputChannel | undefined) { // {{{
+	public async save(restartMode: RestartMode, editor?: ExtensionList): Promise<Result<void, string>> { // {{{
 		let reload = false;
 		let restart = false;
 
@@ -103,7 +112,7 @@ export class ExtensionManager {
 
 			if(uninstalls.length > 0) {
 				for(const id of uninstalls) {
-					debugChannel?.appendLine(`uninstall: ${id}`);
+					Logger.info(`uninstall: ${id}`);
 
 					try {
 						await vscode.commands.executeCommand('workbench.extensions.uninstallExtension', id);
@@ -142,10 +151,13 @@ export class ExtensionManager {
 			}
 		}
 
-		await fse.writeJSON(this._extensionsFileName, {
+		const writeResult = await fse.writeJSON(this._extensionsFileName, {
 			installed: this._currentInstalled,
 			disabled: this._currentDisabled,
 		});
+		if(writeResult.fails) {
+			return err(`Cannot write the file ${this._extensionsFileName}`);
+		}
 
 		if(restartMode === 'auto') {
 			if(restart) {
@@ -173,6 +185,8 @@ export class ExtensionManager {
 				await vscode.commands.executeCommand('workbench.action.restartExtensionHost');
 			}
 		}
+
+		return OK;
 	} // }}}
 
 	public setInstalled(id: string, version: string): void { // {{{
@@ -198,11 +212,11 @@ export class ExtensionManager {
 		this._canUninstallIndividually = await canManageExtensions();
 	} // }}}
 
-	public async unflagEnabled(id: string, debugChannel: vscode.OutputChannel | undefined) { // {{{
+	public async unflagEnabled(id: string) { // {{{
 		this._nextDisabled?.push(id);
 
 		if(!this._currentDisabled.includes(id) && this._canUninstallIndividually) {
-			await disableExtension(id, debugChannel);
+			await disableExtension(id);
 		}
 	} // }}}
 }

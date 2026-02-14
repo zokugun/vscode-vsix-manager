@@ -50,8 +50,6 @@ export type GitConfig = {
 	getAssetUrl(asset: unknown): string;
 };
 
-export type InstallResult = { name: string; version: string; enabled: boolean } | undefined;
-
 export type MarketPlace = {
 	type: 'marketplace';
 	serviceUrl: string;
@@ -62,9 +60,20 @@ export type MarketPlace = {
 
 export type RestartMode = 'auto' | 'none' | 'reload-windows' | 'restart-app' | 'restart-host';
 
-export type Source = FileSystem | Forgejo | GitHub | MarketPlace | 'github';
+export type SearchResult = {
+	identifier?: string;
+	fullName: string;
+	version: string;
+	file: string;
+	unlink?: string;
+};
 
-export type UpdateResult = string | { name: string; version: string; updated: boolean } | undefined;
+export type PartialSearchResult = Omit<SearchResult, 'identifier' | 'fullName'> & {
+	identifier?: string;
+	fullName?: string;
+};
+
+export type Source = FileSystem | Forgejo | GitHub | MarketPlace | 'github';
 
 export type VSIXManager = {
 	installExtensions(update?: boolean): Promise<void>;
