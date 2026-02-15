@@ -53,7 +53,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
       - name: Setup Node.js
         if: env.RELEASE_EXISTS == 'no'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
       - name: Build
