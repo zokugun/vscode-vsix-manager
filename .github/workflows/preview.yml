@@ -27,7 +27,8 @@ jobs:
           node-version-file: '.nvmrc'
       - name: Update package.json
         run: |
-          jq --arg version "$LATEST_TAG" '.version = $version | .preview = true' package.json | sponge package.json
+          jq --arg version "$LATEST_TAG" '.version = $version | .preview = true' package.json > package.json.tmp
+          mv package.json.tmp package.json
       - name: Build
         run: |
           npm ci
