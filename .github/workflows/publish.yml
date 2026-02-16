@@ -55,7 +55,7 @@ jobs:
         if: env.RELEASE_EXISTS == 'no'
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: '.nvmrc'
       - name: Build
         if: env.RELEASE_EXISTS == 'no'
         run: |
