@@ -35,7 +35,7 @@
 		"watch:src": "tsc-watch -p src --onSuccess 'npm run bundle'"
 	},
 	"dependencies": {
-		"@zokugun/fs-extra-plus": "^0.3.2",
+		"@zokugun/fs-extra-plus": "^0.3.3",
 		"@zokugun/is-it-type": "^0.5.1",
 		"@zokugun/vscode-utils": "^0.2.0",
 		"@zokugun/xtry": "^0.10.1",
@@ -86,7 +86,7 @@
 			},
 			{
 				"command": "vsix.installExtensions",
-				"title": "Synchronize extensions",
+				"title": "Install extensions",
 				"category": "VSIX Manager"
 			},
 			{
@@ -96,7 +96,7 @@
 			},
 			{
 				"command": "vsix.updateExtensions",
-				"title": "Update only installed extensions",
+				"title": "Update extensions",
 				"category": "VSIX Manager"
 			}
 		],
@@ -114,7 +114,6 @@
 						}
 					},
 					"default": {},
-					"scope": "application",
 					"tags": [
 						"vsix"
 					]
@@ -123,7 +122,6 @@
 					"type": "boolean",
 					"description": "Output debug logs",
 					"default": false,
-					"scope": "application",
 					"tags": [
 						"vsix"
 					]
@@ -160,7 +158,6 @@
 						}
 					],
 					"default": [],
-					"scope": "application",
 					"uniqueItems": true,
 					"tags": [
 						"vsix"
@@ -204,7 +201,6 @@
 						}
 					],
 					"default": {},
-					"scope": "application",
 					"uniqueItems": true,
 					"tags": [
 						"vsix"
@@ -235,7 +231,6 @@
 					"type": "boolean",
 					"description": "Confirm with the user that the editor might restart or reload.",
 					"default": true,
-					"scope": "application",
 					"tags": [
 						"vsix"
 					]
@@ -258,7 +253,6 @@
 						"Restart the extension host",
 						"Restart the app"
 					],
-					"scope": "application",
 					"tags": [
 						"vsix"
 					]
@@ -267,7 +261,6 @@
 					"type": "boolean",
 					"description": "Show an alert when an error occurs.",
 					"default": true,
-					"scope": "application",
 					"tags": [
 						"vsix"
 					]
@@ -309,8 +302,45 @@
 						}
 					],
 					"default": {},
-					"scope": "application",
 					"uniqueItems": true,
+					"tags": [
+						"vsix"
+					]
+				},
+				"vsix.workspace.autoInstall": {
+					"type": "string",
+					"description": "Auto-install the extensions of a workspace",
+					"default": "ask",
+					"enum": [
+						"ask",
+						"off",
+						"on"
+					],
+					"enumDescriptions": [
+						"Ask before starting the auto-install",
+						"No, don't auto-install",
+						"Yes, do auto-install"
+					],
+					"scope": "application",
+					"tags": [
+						"vsix"
+					]
+				},
+				"vsix.workspace.enable": {
+					"type": "string",
+					"description": "Allow or not extensions from workspace config",
+					"default": "off",
+					"enum": [
+						"ask",
+						"off",
+						"on"
+					],
+					"enumDescriptions": [
+						"Ask before installing extensions from the workspace settings",
+						"No, don't install extensions from the workspace settings",
+						"Yes, do install extensions from the workspace settings"
+					],
+					"scope": "application",
 					"tags": [
 						"vsix"
 					]

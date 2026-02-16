@@ -1,3 +1,5 @@
+export type Aliases = Record<string, string>;
+
 export type Metadata = {
 	kind: MetadataKind;
 	enabled: boolean;
@@ -9,16 +11,9 @@ export type Metadata = {
 
 export type MetadataKind = 'extension' | 'group';
 
-export type Extension = { id: string; version: string };
+export type Extension = { id: string; version: string; builtin?: boolean; enabled?: boolean; mode?: ManagerMode };
 
-export type ExtensionList = {
-	builtin?: {
-		disabled?: Extension[];
-		enabled?: Extension[];
-	};
-	disabled: Extension[];
-	enabled: Extension[];
-};
+export type ExtensionMap = Record<string, Extension>;
 
 export type FileSystem = {
 	type: 'file';
@@ -50,6 +45,8 @@ export type GitConfig = {
 	getAssetUrl(asset: unknown): string;
 };
 
+export type ManagerMode = 'global' | 'workspace';
+
 export type MarketPlace = {
 	type: 'marketplace';
 	serviceUrl: string;
@@ -60,18 +57,22 @@ export type MarketPlace = {
 
 export type RestartMode = 'auto' | 'none' | 'reload-windows' | 'restart-app' | 'restart-host';
 
-export type SearchResult = {
-	identifier?: string;
+export type SearchDownloadResult = {
+	type: 'download';
+	fullName: string;
+	version: string;
+	download: () => Promise<string>;
+};
+
+export type SearchFileResult = {
+	type: 'file';
 	fullName: string;
 	version: string;
 	file: string;
 	unlink?: string;
 };
 
-export type PartialSearchResult = Omit<SearchResult, 'identifier' | 'fullName'> & {
-	identifier?: string;
-	fullName?: string;
-};
+export type SearchResult = SearchFileResult | SearchDownloadResult;
 
 export type Source = FileSystem | Forgejo | GitHub | MarketPlace | 'github';
 

@@ -1,16 +1,46 @@
+import { stringifyError } from '@zokugun/xtry';
 import semver from 'semver';
 import vscode from 'vscode';
+import { loadAliases } from '../aliases/load-aliases.js';
+import { saveAliases } from '../aliases/save-aliases.js';
 import { ExtensionManager } from '../extensions/extension-manager.js';
+import { hasWorkspaceExtensions } from '../extensions/has-workspace-extensions.js';
 import { installIntoEditor } from '../extensions/install-into-editor.js';
+import { isConfiguredWorkspace } from '../extensions/is-configured-workspace.js';
+import { resolveExtensionName } from '../extensions/resolve-extension-name.js';
+import { confirmNoWorkspaceMessage } from '../modals/confirm-no-workspace-message.js';
 import { confirmRestartMessage } from '../modals/confirm-restart-message.js';
 import { CONFIG_KEY, TEMPORARY_DIR } from '../settings.js';
-import type { Metadata, RestartMode, SearchResult, Source } from '../types.js';
+import type { Aliases, ManagerMode, Metadata, RestartMode, SearchResult, Source } from '../types.js';
+import { download } from '../utils/download.js';
+import { FileLock } from '../utils/file-lock.js';
 import { Logger } from '../utils/logger.js';
 import { parseMetadata } from '../utils/parse-metadata.js';
 import { search } from '../utils/search.js';
 
 export async function updateExtensions(): Promise<void> {
 	const config = vscode.workspace.getConfiguration(CONFIG_KEY);
+	const extensions = config.inspect<unknown[]>('extensions');
+	const sources = config.inspect<Record<string, Source>>('sources');
+	const groups = config.inspect<Record<string, unknown[]>>('groups');
+
+	if(!extensions) {
+		return;
+	}
+
+	const workspaceEnabled = config.get<string>('workspace.enable') ?? 'off';
+
+	let mode: ManagerMode = 'global';
+
+	if(hasWorkspaceExtensions(config) && workspaceEnabled !== 'off') {
+		if(!await isConfiguredWorkspace()) {
+			await confirmNoWorkspaceMessage();
+
+			return;
+		}
+
+		mode = 'workspace';
+	}
 
 	if(!await confirmRestartMessage(config)) {
 		return;
@@ -18,57 +48,89 @@ export async function updateExtensions(): Promise<void> {
 
 	Logger.setup(true);
 
-	const extensions = config.get<unknown[]>('extensions');
-	if(!extensions) {
+	const lock = await FileLock.acquire();
+	if(lock.fails) {
+		Logger.error(lock.error);
 		return;
 	}
 
-	const sources = config.get<Record<string, Source>>('sources');
-	const groups = config.get<Record<string, string[]>>('groups');
+	const extensionManager = new ExtensionManager(mode);
 
-	const extensionManager = new ExtensionManager();
+	const loadResult = await extensionManager.load();
+	if(loadResult.fails) {
+		await lock.value.release();
 
-	await extensionManager.load();
-
-	for(const extension of extensions) {
-		await updateExtension(extension, sources, groups, extensionManager);
+		Logger.error(loadResult.error);
+		return;
 	}
+
+	await extensionManager.startSession(() => true);
+
+	const aliases = await loadAliases();
+
+	if(extensions.globalValue) {
+		await updateAllExtensions(extensions.globalValue, sources?.globalValue, groups?.globalValue, 'global', aliases, extensionManager);
+	}
+
+	if(mode === 'workspace') {
+		const sources = config.get<Record<string, Source>>('sources');
+		const groups = config.get<Record<string, unknown[]>>('groups');
+
+		await updateAllExtensions(extensions.workspaceValue!, sources, groups, 'workspace', aliases, extensionManager);
+	}
+
+	await saveAliases(aliases);
 
 	const restartMode = config.get<RestartMode>('restart.mode') ?? 'auto';
 
 	const saveResult = await extensionManager.save(restartMode);
+
+	await lock.value.release();
+
 	if(saveResult.fails) {
 		Logger.error(saveResult.error);
-		return;
 	}
-
-	Logger.info('done');
+	else {
+		Logger.info('done');
+	}
 }
 
-async function updateExtension(data: unknown, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, extensionManager: ExtensionManager): Promise<void> { // {{{
+async function updateAllExtensions(extensions: unknown[], sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, mode: ManagerMode, aliases: Aliases, extensionManager: ExtensionManager): Promise<void> { // {{{
+	Logger.debug(extensions);
+	for(const extension of extensions) {
+		await updateExtension(extension, sources, groups, mode, aliases, extensionManager);
+	}
+} // }}}
+
+async function updateExtension(data: unknown, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, mode: ManagerMode, aliases: Aliases, extensionManager: ExtensionManager): Promise<void> { // {{{
 	for(const extension of parseMetadata(data)) {
 		try {
 			if(extension.kind === 'group') {
-				await updateGroup(extension, sources, groups, extensionManager);
+				return updateGroup(extension, sources, groups, mode, aliases, extensionManager);
 			}
-			else if(extensionManager.hasInstalled(extension.fullName)) {
-				if(extension.source) {
-					await updateExtensionWithSource(extension, sources, groups, extensionManager);
+			else if(extension.source) {
+				const source = extension.source === 'github' ? extension.source : sources?.[extension.source];
+
+				if(!source) {
+					return;
 				}
-				else {
-					// skip, managed by the editor
+
+				const extensionName = resolveExtensionName(extension, source, aliases);
+
+				if(extensionManager.isManaged(extensionName, mode)) {
+					return updateExtensionWithSource(extension, sources, groups, mode, aliases, extensionManager);
 				}
 
 				return;
 			}
 		}
 		catch (error: unknown) {
-			Logger.error(error);
+			Logger.error(stringifyError(error));
 		}
 	}
 } // }}}
 
-async function updateExtensionWithSource(metadata: Metadata, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, extensionManager: ExtensionManager): Promise<void> { // {{{
+async function updateExtensionWithSource(metadata: Metadata, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, mode: ManagerMode, aliases: Aliases, extensionManager: ExtensionManager): Promise<void> { // {{{
 	Logger.info(`updating extension: ${metadata.source!}:${metadata.fullName}`);
 
 	if(metadata.targetVersion) {
@@ -91,7 +153,13 @@ async function updateExtensionWithSource(metadata: Metadata, sources: Record<str
 	let extensionName: string;
 
 	if(source === 'github' || source.type !== 'marketplace') {
-		result = await search(metadata, source, sources, TEMPORARY_DIR);
+		const searchResult = await search(metadata, source, sources, TEMPORARY_DIR, aliases);
+		if(searchResult.fails) {
+			Logger.error(searchResult.error);
+			return;
+		}
+
+		result = searchResult.value;
 
 		if(!result) {
 			Logger.info('not found');
@@ -116,7 +184,15 @@ async function updateExtensionWithSource(metadata: Metadata, sources: Record<str
 		return;
 	}
 
-	result ??= await search(metadata, source, sources, TEMPORARY_DIR);
+	if(!result) {
+		const searchResult = await search(metadata, source, sources, TEMPORARY_DIR, aliases);
+		if(searchResult.fails) {
+			Logger.error(searchResult.error);
+			return;
+		}
+
+		result = searchResult.value;
+	}
 
 	if(!result) {
 		Logger.info('not found');
@@ -125,20 +201,22 @@ async function updateExtensionWithSource(metadata: Metadata, sources: Record<str
 	}
 
 	if(semver.gt(result.version, currentVersion)) {
+		result = await download(result);
+
 		await installIntoEditor(result);
 
-		extensionManager.setInstalled(extensionName, result.version);
+		extensionManager.setInstalled(extensionName, result.version, mode);
 
 		Logger.info(`updated to version: ${result.version}`);
 	}
 	else {
-		extensionManager.setInstalled(extensionName, currentVersion);
+		extensionManager.setInstalled(extensionName, currentVersion, mode);
 
 		Logger.info('no newer version found');
 	}
 } // }}}
 
-async function updateGroup(extension: Metadata, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, extensionManager: ExtensionManager): Promise<void> { // {{{
+async function updateGroup(extension: Metadata, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, mode: ManagerMode, aliases: Aliases, extensionManager: ExtensionManager): Promise<void> { // {{{
 	Logger.info(`updating group: ${extension.fullName}`);
 	if(!groups) {
 		Logger.info('no groups');
@@ -153,10 +231,10 @@ async function updateGroup(extension: Metadata, sources: Record<string, Source> 
 
 	for(const extension of extensions) {
 		try {
-			await updateExtension(extension, sources, groups, extensionManager);
+			await updateExtension(extension, sources, groups, mode, aliases, extensionManager);
 		}
 		catch (error: unknown) {
-			Logger.info(String(error));
+			Logger.error(stringifyError(error));
 		}
 	}
 } // }}}
