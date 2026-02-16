@@ -1,3 +1,5 @@
+import path from 'node:path';
+import fse from '@zokugun/fs-extra-plus/async';
 import vscode from 'vscode';
 import pkg from '../package.json';
 import { adoptExtensions } from './commands/adopt-extensions.js';
@@ -5,9 +7,11 @@ import { installExtensions } from './commands/install-extensions.js';
 import { uninstallExtensions } from './commands/uninstall-extensions.js';
 import { updateExtensions } from './commands/update-extensions.js';
 import { setupCrons } from './crons.js';
+import { hasWorkspaceExtensions } from './extensions/has-workspace-extensions.js';
 import { listManagedExtensions } from './extensions/list-managed-extensions.js';
-import { CONFIG_KEY, setupSettings } from './settings.js';
+import { CONFIG_KEY, setupSettings, WORKSPACE_STORAGE } from './settings.js';
 import { type VSIXManager } from './types.js';
+import { Logger } from './utils/logger.js';
 
 const VERSION_KEY = 'version';
 
@@ -81,11 +85,30 @@ export async function activate(context: vscode.ExtensionContext): Promise<VSIXMa
 
 	await setupCrons();
 
-	vscode.workspace.onDidChangeConfiguration(async (event) => {
-		if(event.affectsConfiguration('vsix.crons')) {
-			await setupCrons();
+	disposables.push(
+		vscode.workspace.onDidChangeConfiguration(async (event) => {
+			if(event.affectsConfiguration('vsix.crons')) {
+				await setupCrons();
+			}
+		}),
+	);
+
+	const workspaceEnabled = config.get<string>('workspace.enable') ?? 'off';
+	const workspaceAutoInstall = config.get<string>('workspace.autoInstall') ?? 'ask';
+
+	if(hasWorkspaceExtensions(config) && workspaceEnabled !== 'off' && workspaceAutoInstall !== 'off') {
+		if(WORKSPACE_STORAGE) {
+			const filePath = path.join(WORKSPACE_STORAGE, 'extensions.json');
+			const exists = await fse.pathExists(filePath);
+
+			if(!exists.value) {
+				await installExtensions(false, true);
+			}
 		}
-	});
+		else {
+			Logger.error('Cannot find the storage for the workspace');
+		}
+	}
 
 	return {
 		installExtensions,
