@@ -34,7 +34,7 @@ jobs:
 
           jq -r '"version: \(.version)\npreview: \(.preview)"' package.json
 
-          echo "RELEASE_TAG=$VERSION" >> $GITHUB_ENV
+          echo "RELEASE_TAG=v$VERSION" >> $GITHUB_ENV
       - name: Build
         run: |
           npm ci
