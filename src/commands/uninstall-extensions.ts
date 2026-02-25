@@ -1,9 +1,9 @@
 import vscode from 'vscode';
 import { ExtensionManager } from '../extensions/extension-manager.js';
-import { listExtensions } from '../extensions/list-extensions.js';
 import { confirmRestartMessage } from '../modals/confirm-restart-message.js';
-import { CONFIG_KEY, EXTENSION_ID } from '../settings.js';
+import { CONFIG_KEY } from '../settings.js';
 import { type RestartMode } from '../types.js';
+import { FileLock } from '../utils/file-lock.js';
 import { Logger } from '../utils/logger.js';
 
 export async function uninstallExtensions(): Promise<void> {
@@ -15,21 +15,24 @@ export async function uninstallExtensions(): Promise<void> {
 
 	Logger.setup(true);
 
-	const editorExtensions = await listExtensions(EXTENSION_ID);
-	if(editorExtensions.fails) {
-		Logger.error(editorExtensions.error);
+	const lock = await FileLock.acquire();
+	if(lock.fails) {
+		Logger.error(lock.error);
 		return;
 	}
 
-	const extensionManager = new ExtensionManager();
+	const extensionManager = new ExtensionManager('global');
 
 	await extensionManager.load();
 
-	await extensionManager.startInstallSession();
+	await extensionManager.startSession();
 
 	const restartMode = config.get<RestartMode>('restart.mode') ?? 'auto';
 
-	const saveResult = await extensionManager.save(restartMode, editorExtensions.value);
+	const saveResult = await extensionManager.save(restartMode);
+
+	await lock.value.release();
+
 	if(saveResult.fails) {
 		Logger.error(saveResult.error);
 	}

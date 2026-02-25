@@ -5,7 +5,7 @@ import got from 'got';
 import semver from 'semver';
 import vscode from 'vscode';
 import { TARGET_PLATFORM } from '../settings.js';
-import type { MarketPlace, Metadata, SearchResult } from '../types.js';
+import type { MarketPlace, Metadata, SearchDownloadResult } from '../types.js';
 import { Logger } from '../utils/logger.js';
 
 type Version = {
@@ -112,7 +112,7 @@ async function query(source: MarketPlace, extensionName: string): Promise<QueryR
 	}).json();
 } // }}}
 
-export async function search({ fullName: extensionName, targetVersion }: Metadata, source: MarketPlace, temporaryDir: string): Promise<SearchResult | undefined> { // {{{
+export async function search({ fullName: extensionName, targetVersion }: Metadata, source: MarketPlace, temporaryDir: string): Promise<SearchDownloadResult | undefined> { // {{{
 	if(source.throttle > 0) {
 		await delayRequest(source);
 	}
@@ -158,13 +158,11 @@ export async function search({ fullName: extensionName, targetVersion }: Metadat
 						}
 
 						if(version && downloadUrl) {
-							const file = await download(extensionName, version, data.targetPlatform, downloadUrl, temporaryDir);
-
 							return {
+								type: 'download',
 								fullName: extensionName,
 								version,
-								file,
-								unlink: file,
+								download: async () => download(extensionName, version, data.targetPlatform, downloadUrl, temporaryDir),
 							};
 						}
 					}
