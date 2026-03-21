@@ -15,7 +15,7 @@
 		"url": "https://github.com/zokugun/vscode-vsix-manager.git"
 	},
 	"bugs": {
-		"url": "https://github.com/zokugun/vscode-vsix-manager/issues"
+		"url": "https://github.com/zokugun/vscode-vsix-manager/discussions/categories/issue-triage"
 	},
 	"engines": {
 		"vscode": "^1.23.0"
