@@ -1,10 +1,13 @@
 import path from 'path';
 import { pipeline } from 'stream/promises';
 import fse from '@zokugun/fs-extra-plus/async';
+import { stringifyError } from '@zokugun/xtry';
 import got from 'got';
 import semver from 'semver';
+import { toAlias } from '../aliases/to-alias.js';
+import { extractExtensionName } from '../extensions/extract-extension-name.js';
 import { TARGET_PLATFORM } from '../settings.js';
-import type { GitConfig, GitService, PartialSearchResult, Metadata } from '../types.js';
+import type { Aliases, GitConfig, GitService, Metadata, SearchResult } from '../types.js';
 import { Logger } from '../utils/logger.js';
 import { parseAssetName } from '../utils/parse-asset-name.js';
 
@@ -170,14 +173,45 @@ async function findLatestAsset({ fullName: repoName, targetName, targetVersion }
 	return url ? { name, version, platform, url } : NO_ASSET;
 } // }}}
 
-export async function search(metadata: Metadata, source: GitService | undefined, config: GitConfig, temporaryDir: string): Promise<PartialSearchResult | undefined> { // {{{
+export async function search(metadata: Metadata, source: GitService | undefined, config: GitConfig, temporaryDir: string, aliases: Aliases): Promise<SearchResult | undefined> { // {{{
 	const { name, version, platform, url } = await findLatestAsset(metadata, source, config);
+	Logger.debug(metadata);
+	Logger.debug(name, version, platform, url);
 
 	if(!name) {
 		return;
 	}
 
-	const file = await download(name, version, platform, source, config, url, temporaryDir);
+	const aliasName = toAlias(metadata);
+	const fullName = aliases[aliasName];
 
-	return { version, file, unlink: file };
+	if(fullName) {
+		return {
+			type: 'download',
+			fullName,
+			version,
+			download: async () => download(name, version, platform, source, config, url, temporaryDir),
+		};
+	}
+	else {
+		const file = await download(name, version, platform, source, config, url, temporaryDir);
+
+		const result = await extractExtensionName(file);
+		if(result.fails) {
+			Logger.info(stringifyError(result.error));
+			return;
+		}
+
+		const fullName = result.value;
+
+		aliases[aliasName] = fullName;
+
+		return {
+			type: 'file',
+			fullName,
+			version,
+			file,
+			unlink: file,
+		};
+	}
 } // }}}

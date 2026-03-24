@@ -11,12 +11,14 @@ export const TARGET_PLATFORM = `${platform}-${arch}` as const;
 export let EXTENSION_ID: string = '';
 export let GLOBAL_STORAGE: string = '';
 export let TEMPORARY_DIR: string = '';
+export let WORKSPACE_STORAGE: string | undefined;
 /* eslint-enable */
 
 export async function setupSettings(context: vscode.ExtensionContext): Promise<Result<void, string>> {
 	EXTENSION_ID = context.extension.id;
 	GLOBAL_STORAGE = context.globalStorageUri.fsPath;
 	TEMPORARY_DIR = path.join(GLOBAL_STORAGE, 'temp');
+	WORKSPACE_STORAGE = context.storageUri?.fsPath;
 
 	const result = await fse.ensureDir(TEMPORARY_DIR);
 	if(result.fails) {

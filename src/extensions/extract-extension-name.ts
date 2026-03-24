@@ -1,20 +1,16 @@
+import path from 'node:path';
 import { isNonBlankString, isRecord } from '@zokugun/is-it-type';
 import { err, ok, type Result, toStringFailure, xdefer, xtrySync } from '@zokugun/xtry/async';
 import { open, streamToString } from '@zokugun/yauzl-plus';
-import { type PartialSearchResult, type SearchResult } from '../types.js';
 
-export async function updateName(result: PartialSearchResult): Promise<Result<SearchResult, string>> {
-	if(result.fullName) {
-		return ok(result as SearchResult);
-	}
-
-	const zipResult = await open(result.file, {
+export async function extractExtensionName(file: string): Promise<Result<string, string>> {
+	const zipResult = await open(file, {
 		decodeStrings: true,
 		strictFilenames: false,
 	});
 
 	if(zipResult.fails) {
-		return err('Can\'t open zip file');
+		return err(`Cannot open the zip file ${path.basename(file)}`);
 	}
 
 	const zip = zipResult.value;
@@ -54,9 +50,9 @@ export async function updateName(result: PartialSearchResult): Promise<Result<Se
 		const packageJson = packageJsonResult.value;
 
 		if(isRecord(packageJson) && isNonBlankString(packageJson.publisher) && isNonBlankString(packageJson.name)) {
-			result.fullName = `${packageJson.publisher as string}.${packageJson.name as string}`;
+			const fullName = `${packageJson.publisher as string}.${packageJson.name as string}`;
 
-			return close(ok(result as SearchResult));
+			return close(ok(fullName));
 		}
 	}
 

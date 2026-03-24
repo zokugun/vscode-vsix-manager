@@ -4,7 +4,7 @@ import globby from 'globby';
 import semver from 'semver';
 import untildify from 'untildify';
 import { TARGET_PLATFORM } from '../settings.js';
-import type { FileSystem, Metadata, PartialSearchResult } from '../types.js';
+import type { FileSystem, Metadata, SearchFileResult } from '../types.js';
 import { Logger } from '../utils/logger.js';
 import { parseAssetName } from '../utils/parse-asset-name.js';
 
@@ -68,7 +68,7 @@ async function find(root: string, targetName: string, targetVersion: string | un
 	};
 } // }}}
 
-export async function search({ fullName: extensionName, targetVersion }: Metadata, source: FileSystem): Promise<PartialSearchResult | undefined> { // {{{
+export async function search({ fullName: extensionName, targetVersion }: Metadata, source: FileSystem): Promise<SearchFileResult | undefined> { // {{{
 	const root = untildify(source.path);
 
 	const result = await fse.exists(root);
@@ -103,6 +103,8 @@ export async function search({ fullName: extensionName, targetVersion }: Metadat
 
 	if(file) {
 		return {
+			type: 'file',
+			fullName: extensionName,
 			version,
 			file,
 		};
