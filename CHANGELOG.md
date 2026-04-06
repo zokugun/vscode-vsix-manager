@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.12.0 | 2026-04-06
+- remove the support for the deprecated `vsix.sources/kind` property
+- read extension identifier from the zip file if it's not available in the expression (might happened with file or git sources)
+
 ## v0.11.0 | 2025-12-28
 - when using git, improve matching by:
   - checking release name for version (so that the version isn't need in the archive name)
