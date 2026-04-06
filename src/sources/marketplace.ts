@@ -4,9 +4,9 @@ import fse from '@zokugun/fs-extra-plus/async';
 import got from 'got';
 import semver from 'semver';
 import vscode from 'vscode';
-import { TARGET_PLATFORM } from '../settings.js';
 import type { MarketPlace, Metadata, SearchResult } from '../types.js';
 import { Logger } from '../utils/logger.js';
+import { TARGET_PLATFORM } from '../utils/settings.js';
 
 type Version = {
 	assetUri: string;

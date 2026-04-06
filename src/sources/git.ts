@@ -3,10 +3,10 @@ import { pipeline } from 'stream/promises';
 import fse from '@zokugun/fs-extra-plus/async';
 import got from 'got';
 import semver from 'semver';
-import { TARGET_PLATFORM } from '../settings.js';
 import type { GitConfig, GitService, PartialSearchResult, Metadata } from '../types.js';
 import { Logger } from '../utils/logger.js';
 import { parseAssetName } from '../utils/parse-asset-name.js';
+import { TARGET_PLATFORM } from '../utils/settings.js';
 
 type AssetInfo = {
 	name: string;

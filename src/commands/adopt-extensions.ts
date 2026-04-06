@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 import { ExtensionManager } from '../extensions/extension-manager.js';
 import { listExtensions } from '../extensions/list-extensions.js';
-import { CONFIG_KEY, EXTENSION_ID } from '../settings.js';
 import { type ExtensionList, type Metadata, type Source } from '../types.js';
 import { Logger } from '../utils/logger.js';
 import { parseMetadata } from '../utils/parse-metadata.js';
+import { CONFIG_KEY, EXTENSION_ID } from '../utils/settings.js';
 
 type Adopted = { id: string; version: string; enabled: boolean };
 

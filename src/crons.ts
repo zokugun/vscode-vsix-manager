@@ -4,8 +4,8 @@ type Crons = {
 	update?: string;
 };
 
-const $cronsIds = {
-	update: '',
+const $cronsIds: Crons = {
+	update: undefined,
 };
 
 export async function setupCrons() {
@@ -13,7 +13,7 @@ export async function setupCrons() {
 		if($cronsIds[key]) {
 			await vscode.commands.executeCommand('cronTasks.unregister', $cronsIds[key]);
 
-			$cronsIds[key] = '';
+			$cronsIds[key] = undefined;
 		}
 	}
 

@@ -2,9 +2,9 @@ import vscode from 'vscode';
 import { ExtensionManager } from '../extensions/extension-manager.js';
 import { listExtensions } from '../extensions/list-extensions.js';
 import { confirmRestartMessage } from '../modals/confirm-restart-message.js';
-import { CONFIG_KEY, EXTENSION_ID } from '../settings.js';
 import { type RestartMode } from '../types.js';
 import { Logger } from '../utils/logger.js';
+import { CONFIG_KEY, EXTENSION_ID } from '../utils/settings.js';
 
 export async function uninstallExtensions(): Promise<void> {
 	const config = vscode.workspace.getConfiguration(CONFIG_KEY);

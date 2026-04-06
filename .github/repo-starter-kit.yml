@@ -1,7 +1,1 @@
 package: "@daiyam/default"
-migrate:
-  labels:
-    bug: T-bug
-    dependencies: T-maintenance
-    github_actions: A-ci
-    stale: S-stale

@@ -1,0 +1,9 @@
+{
+	"exclude": [
+		"@types/vscode"
+	],
+	"force": true,
+	"includeLocked": true,
+	"maturityPeriod": 7,
+	"write": true
+}

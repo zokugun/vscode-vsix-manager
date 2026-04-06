@@ -3,10 +3,10 @@ import fse from '@zokugun/fs-extra-plus/async';
 import globby from 'globby';
 import semver from 'semver';
 import untildify from 'untildify';
-import { TARGET_PLATFORM } from '../settings.js';
 import type { FileSystem, Metadata, PartialSearchResult } from '../types.js';
 import { Logger } from '../utils/logger.js';
 import { parseAssetName } from '../utils/parse-asset-name.js';
+import { TARGET_PLATFORM } from '../utils/settings.js';
 
 async function find(root: string, targetName: string, targetVersion: string | undefined): Promise<{ version: string; file: string }> { // {{{
 	const foundFiles = await globby('*.vsix', {

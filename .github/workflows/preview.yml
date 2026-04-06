@@ -1,28 +1,40 @@
 name: Preview
+
 on:
   workflow_dispatch: null
+
+permissions:
+  contents: write   # Release
+
 jobs:
   publish:
     runs-on: ubuntu-latest
+    environment: release
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
+          persist-credentials: false
+
       - name: Get Version
         run: |
           # Get the latest tag
           LATEST_TAG=$(git tag --sort=-v:refname | head -n1)
+          LATEST_TAG=${LATEST_TAG%-*}
           if [ -z "$LATEST_TAG" ]; then
             echo "No tags found in the repository"
             exit 1
           fi
           echo "VERSION=$LATEST_TAG" >> $GITHUB_ENV
           echo "Using version: $LATEST_TAG"
+
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: .nvmrc
+          package-manager-cache: false
+
       - name: Update package.json
         run: |
           TIME_PATCH="$(date +%-y)$(printf "%04d" $(($(date +%-j) * 24 + $(date +%-H))))"
@@ -35,6 +47,7 @@ jobs:
           jq -r '"version: \(.version)\npreview: \(.preview)"' package.json
 
           echo "RELEASE_TAG=v$VERSION" >> $GITHUB_ENV
+
       - name: Build
         run: |
           npm ci
@@ -45,16 +58,9 @@ jobs:
           echo "VSIX_NAME=$VSIX_NAME" >> $GITHUB_ENV
           echo "CHECKSUM=$CHECKSUM" >> $GITHUB_ENV
           echo "$CHECKSUM" > "$VSIX_NAME.sha256"
-      - name: Get Changelog
-        run: |
-          CHANGELOG_ENTRY=$(node .github/scripts/get-changelog.js ${{ env.VERSION }})
-          # Properly handle multiline output in GitHub Actions
-          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "CHANGELOG_ENTRY<<$EOF" >> $GITHUB_ENV
-          echo "$CHANGELOG_ENTRY" >> $GITHUB_ENV
-          echo "$EOF" >> $GITHUB_ENV
+
       - name: Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
         with:
           files: |
             ${{ env.VSIX_NAME }}
@@ -66,7 +72,6 @@ jobs:
             Release ${{ env.RELEASE_TAG }}
 
             ## What's Changed
-            ${{ env.CHANGELOG_ENTRY }}
 
             ## Installation
             1. [Download the .vsix file](${{ github.server_url }}/${{ github.repository }}/releases/download/${{ env.VERSION }}/${{ env.VSIX_NAME }})

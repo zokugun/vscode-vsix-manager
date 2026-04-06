@@ -3,11 +3,11 @@ import vscode from 'vscode';
 import { ExtensionManager } from '../extensions/extension-manager.js';
 import { installIntoEditor } from '../extensions/install-into-editor.js';
 import { confirmRestartMessage } from '../modals/confirm-restart-message.js';
-import { CONFIG_KEY, TEMPORARY_DIR } from '../settings.js';
 import type { Metadata, RestartMode, SearchResult, Source } from '../types.js';
 import { Logger } from '../utils/logger.js';
 import { parseMetadata } from '../utils/parse-metadata.js';
 import { search } from '../utils/search.js';
+import { CONFIG_KEY, TEMPORARY_DIR } from '../utils/settings.js';
 
 export async function updateExtensions(): Promise<void> {
 	const config = vscode.workspace.getConfiguration(CONFIG_KEY);

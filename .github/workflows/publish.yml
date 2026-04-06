@@ -1,20 +1,29 @@
 name: Publish Extension
+
 on:
   workflow_dispatch: null
   push:
     tags:
-      - "*"
+      - v*
+
 env:
   PUBLISH_OPENVSX: ${{ vars.PUBLISH_OPENVSX }}
   PUBLISH_VSCODE: ${{ vars.PUBLISH_VSCODE }}
+
+permissions:
+  contents: write   # Release
+
 jobs:
   publish:
     runs-on: ubuntu-latest
+    environment: release
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
+          persist-credentials: false
+
       - name: Get Version
         run: |
           # Get the latest tag
@@ -25,10 +34,11 @@ jobs:
           fi
           echo "VERSION=$LATEST_TAG" >> $GITHUB_ENV
           echo "Using version: $LATEST_TAG"
+
       - name: Check Existing Release
         run: |
           # Try to get the release information
-          RELEASE_INFO=$(gh release view ${{ env.VERSION }} --json assets,url 2>/dev/null || echo "")
+          RELEASE_INFO=$(gh release view ${VERSION} --json assets,url 2>/dev/null || echo "")
           if [ ! -z "$RELEASE_INFO" ]; then
             echo "Release exists"
             echo "RELEASE_EXISTS=yes" >> $GITHUB_ENV
@@ -44,18 +54,22 @@ jobs:
           fi
         env:
           GH_TOKEN: ${{ github.token }}
+
       - name: Download Existing VSIX
         if: env.RELEASE_EXISTS == 'yes' && env.VSIX_URL != ''
         run: |
-          gh api ${{ env.VSIX_URL }} --header 'Accept: application/octet-stream' > ${{ env.VSIX_NAME }}
-          echo "CHECKSUM=$(sha256sum ${{ env.VSIX_NAME }} | cut -d ' ' -f 1)" >> $GITHUB_ENV
+          gh api ${VSIX_URL} --header 'Accept: application/octet-stream' > ${VSIX_NAME}
+          echo "CHECKSUM=$(sha256sum ${VSIX_NAME} | cut -d ' ' -f 1)" >> $GITHUB_ENV
         env:
           GH_TOKEN: ${{ github.token }}
+
       - name: Setup Node.js
         if: env.RELEASE_EXISTS == 'no'
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version-file: '.nvmrc'
+          package-manager-cache: false
+
       - name: Build
         if: env.RELEASE_EXISTS == 'no'
         run: |
@@ -67,10 +81,11 @@ jobs:
           echo "VSIX_NAME=$VSIX_NAME" >> $GITHUB_ENV
           echo "CHECKSUM=$CHECKSUM" >> $GITHUB_ENV
           echo "$CHECKSUM" > "$VSIX_NAME.sha256"
+
       - name: Get Changelog
         if: env.RELEASE_EXISTS == 'no'
         run: |
-          CHANGELOG_ENTRY=$(node .github/scripts/get-changelog.js ${{ env.VERSION }})
+          CHANGELOG_ENTRY=$(node .github/scripts/get-changelog.js ${VERSION})
           # Properly handle multiline output in GitHub Actions
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "CHANGELOG_ENTRY<<$EOF" >> $GITHUB_ENV
@@ -79,7 +94,7 @@ jobs:
 
       - name: Release
         if: env.RELEASE_EXISTS == 'no'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
         with:
           files: |
             ${{ env.VSIX_NAME }}
@@ -104,14 +119,15 @@ jobs:
 
       - name: Publish to Open VSX Registry
         if: env.PUBLISH_OPENVSX == 'yes'
-        uses: HaaLeo/publish-vscode-extension@v2
+        uses: HaaLeo/publish-vscode-extension@ca5561daa085dee804bf9f37fe0165785a9b14db # v2.0.0
         with:
           extensionFile: ${{ env.VSIX_NAME }}
           pat: ${{ secrets.TOKEN_OPENVSX }}
           skipDuplicate: true
+
       - name: Publish to Visual Studio Code Marketplace
         if: env.PUBLISH_VSCODE == 'yes'
-        uses: HaaLeo/publish-vscode-extension@v2
+        uses: HaaLeo/publish-vscode-extension@ca5561daa085dee804bf9f37fe0165785a9b14db # v2.0.0
         with:
           extensionFile: ${{ env.VSIX_NAME }}
           pat: ${{ secrets.TOKEN_VSCODE }}

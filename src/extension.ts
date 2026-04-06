@@ -6,8 +6,8 @@ import { uninstallExtensions } from './commands/uninstall-extensions.js';
 import { updateExtensions } from './commands/update-extensions.js';
 import { setupCrons } from './crons.js';
 import { listManagedExtensions } from './extensions/list-managed-extensions.js';
-import { CONFIG_KEY, setupSettings } from './settings.js';
 import { type VSIXManager } from './types.js';
+import { CONFIG_KEY, setupSettings } from './utils/settings.js';
 
 const VERSION_KEY = 'version';
 
