@@ -1,7 +1,7 @@
 name: Preview
 
 on:
-  workflow_dispatch: null
+  workflow_dispatch: {}
 
 permissions:
   contents: write   # Release
