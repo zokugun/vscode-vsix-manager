@@ -22,10 +22,12 @@ jobs:
           # Get the latest tag
           LATEST_TAG=$(git tag --sort=-v:refname | head -n1)
           LATEST_TAG=${LATEST_TAG%-*}
+
           if [ -z "$LATEST_TAG" ]; then
             echo "No tags found in the repository"
             exit 1
           fi
+
           echo "VERSION=$LATEST_TAG" >> $GITHUB_ENV
           echo "Using version: $LATEST_TAG"
 
@@ -53,8 +55,10 @@ jobs:
           npm ci
           npm install -g @vscode/vsce
           npm run package
+
           VSIX_NAME=$(ls *.vsix)
           CHECKSUM=$(sha256sum $VSIX_NAME | cut -d ' ' -f 1)
+
           echo "VSIX_NAME=$VSIX_NAME" >> $GITHUB_ENV
           echo "CHECKSUM=$CHECKSUM" >> $GITHUB_ENV
           echo "$CHECKSUM" > "$VSIX_NAME.sha256"

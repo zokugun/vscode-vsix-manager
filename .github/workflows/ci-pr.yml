@@ -1,4 +1,4 @@
-name: Check PR
+name: "CI - Pull Request: Build & Lint"
 
 on:
   pull_request:
@@ -19,6 +19,10 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Install zizmor
+        run: |
+          pipx install zizmor
+
       - name: Setup Node.js environment
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
@@ -38,8 +42,11 @@ jobs:
 
       - name: Lint code
         run: |
-          npm run lint
+          npm run lint:all
 
       - name: Lint commit
         run: |
-          npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
+          npx commitlint --from "${BASE_SHA}" --to "${HEAD_SHA}" --verbose
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}

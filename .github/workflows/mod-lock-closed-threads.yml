@@ -1,4 +1,4 @@
-name: Lock Closed Threads
+name: Moderation - Lock Closed Threads
 
 on:
   schedule:

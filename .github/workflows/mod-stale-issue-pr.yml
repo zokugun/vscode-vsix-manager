@@ -1,4 +1,4 @@
-name: Stale Issues & PR
+name: Moderation - Stale Issues & PR
 
 on:
   schedule:
@@ -20,7 +20,9 @@ jobs:
           close-issue-message: This issue has been closed due to inactivity, and will not be monitored. If this is a bug and you can reproduce this issue, please open a new issue.
           stale-issue-label: S-stale
           close-issue-label: S-abandoned
+          exempt-issue-labels: M-prevent-stale
           stale-pr-message: This PR has been automatically marked as stale.
           close-pr-message: This PR has been closed due to inactivity, and will not be monitored.
           stale-pr-label: S-stale
           close-pr-label: S-abandoned
+          exempt-pr-labels: M-prevent-stale

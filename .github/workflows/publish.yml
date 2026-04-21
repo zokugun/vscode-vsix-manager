@@ -28,10 +28,12 @@ jobs:
         run: |
           # Get the latest tag
           LATEST_TAG=$(git tag --sort=-v:refname | head -n1)
+
           if [ -z "$LATEST_TAG" ]; then
             echo "No tags found in the repository"
             exit 1
           fi
+
           echo "VERSION=$LATEST_TAG" >> $GITHUB_ENV
           echo "Using version: $LATEST_TAG"
 
@@ -39,11 +41,14 @@ jobs:
         run: |
           # Try to get the release information
           RELEASE_INFO=$(gh release view ${VERSION} --json assets,url 2>/dev/null || echo "")
+
           if [ ! -z "$RELEASE_INFO" ]; then
             echo "Release exists"
             echo "RELEASE_EXISTS=yes" >> $GITHUB_ENV
+
             # Get the VSIX asset URL from the release
             VSIX_URL=$(echo $RELEASE_INFO | jq -r '.assets[] | select(.name | endswith(".vsix")) | .url')
+
             if [ ! -z "$VSIX_URL" ]; then
               echo "Found existing VSIX file"
               echo "VSIX_URL=$VSIX_URL" >> $GITHUB_ENV
@@ -76,8 +81,10 @@ jobs:
           npm ci
           npm install -g @vscode/vsce
           npm run package
+
           VSIX_NAME=$(ls *.vsix)
           CHECKSUM=$(sha256sum $VSIX_NAME | cut -d ' ' -f 1)
+
           echo "VSIX_NAME=$VSIX_NAME" >> $GITHUB_ENV
           echo "CHECKSUM=$CHECKSUM" >> $GITHUB_ENV
           echo "$CHECKSUM" > "$VSIX_NAME.sha256"
@@ -86,8 +93,10 @@ jobs:
         if: env.RELEASE_EXISTS == 'no'
         run: |
           CHANGELOG_ENTRY=$(node .github/scripts/get-changelog.js ${VERSION})
+
           # Properly handle multiline output in GitHub Actions
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+
           echo "CHANGELOG_ENTRY<<$EOF" >> $GITHUB_ENV
           echo "$CHANGELOG_ENTRY" >> $GITHUB_ENV
           echo "$EOF" >> $GITHUB_ENV

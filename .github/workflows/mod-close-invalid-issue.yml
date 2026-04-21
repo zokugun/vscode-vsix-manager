@@ -1,4 +1,4 @@
-name: Close Invalid Issue
+name: Moderation - Close Invalid Issue
 
 on:
   issues:
