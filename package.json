@@ -46,7 +46,7 @@
 		"@zokugun/fs-extra-plus": "0.3.7",
 		"@zokugun/is-it-type": "0.5.2",
 		"@zokugun/vscode-utils": "0.2.0",
-		"@zokugun/xtry": "0.11.4",
+		"@zokugun/xtry": "0.11.5",
 		"@zokugun/yauzl-plus": "0.1.1",
 		"globby": "11.1.0",
 		"got": "11.8.6",
