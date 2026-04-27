@@ -37,7 +37,7 @@
 		"prepare": "husky; fixpack || true",
 		"release": "release-it",
 		"update:artifacts": "artifact update",
-		"update:ci": "PINACT_MIN_AGE=7 pinact run",
+		"update:ci": "PINACT_MIN_AGE=7 pinact run --update",
 		"update:deps": "taze",
 		"vscode:prepublish": "npm run build",
 		"watch:src": "tsc-watch -p src --onSuccess 'npm run bundle'"
