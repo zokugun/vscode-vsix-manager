@@ -2,7 +2,6 @@ import path from 'path';
 import fse from '@zokugun/fs-extra-plus/async';
 import globby from 'globby';
 import semver from 'semver';
-import untildify from 'untildify';
 import type { FileSystem, Metadata, PartialSearchResult } from '../types.js';
 import { Logger } from '../utils/logger.js';
 import { parseAssetName } from '../utils/parse-asset-name.js';
@@ -69,7 +68,7 @@ async function find(root: string, targetName: string, targetVersion: string | un
 } // }}}
 
 export async function search({ fullName: extensionName, targetVersion }: Metadata, source: FileSystem): Promise<PartialSearchResult | undefined> { // {{{
-	const root = untildify(source.path);
+	const root = fse.untildify(source.path);
 
 	const result = await fse.exists(root);
 	if(!result.value) {

@@ -161,7 +161,7 @@ export class ExtensionManager {
 
 		if(restartMode === 'auto') {
 			if(restart) {
-				await restartApp(EXTENSION_NAME);
+				await restartApp(EXTENSION_NAME, Logger);
 			}
 			else if(reload) {
 				await vscode.commands.executeCommand('workbench.action.reloadWindow');
@@ -177,7 +177,7 @@ export class ExtensionManager {
 		}
 		else if(restartMode === 'restart-app') {
 			if(restart || reload) {
-				await restartApp(EXTENSION_NAME);
+				await restartApp(EXTENSION_NAME, Logger);
 			}
 		}
 		else if(restartMode === 'restart-host') {
