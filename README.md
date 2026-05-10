@@ -300,7 +300,7 @@ Commands
 --------
 
 - `> VSIX Manager: Adopt unmanaged extensions`: brings extensions that are currently unmanaged under the control of VSIX Manager. Use this command to ensure all your listed extensions are managed consistently.
-- `> VSIX Manager: Install extensions`: install the extensions
+- `> VSIX Manager: Synchronize extensions`: synchronize/install the extensions
 - `> VSIX Manager: Uninstall extensions`: uninstall the extensions
 - `> VSIX Manager: Update extensions`: update the extensions
 
