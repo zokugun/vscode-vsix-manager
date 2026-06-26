@@ -61,7 +61,7 @@
 		"@types/semver": "7.7.1",
 		"@types/sql.js": "1.4.11",
 		"@types/vscode": "1.56.0",
-		"@vercel/ncc": "0.38.4",
+		"@vercel/ncc": "0.44.0",
 		"@vscode/vsce": "3.9.2",
 		"fixpack": "4.0.0",
 		"husky": "9.1.7",
