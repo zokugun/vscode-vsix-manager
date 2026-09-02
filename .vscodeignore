@@ -6,9 +6,5 @@
 !package.json
 !LICENSE
 !README.md
+!lib/
 !lib/**
-!node_modules/sql.js/package.json
-!node_modules/sql.js/dist/sql-wasm.js
-!node_modules/sql.js/dist/sql-wasm.wasm
-!node_modules/sql.js/LICENSE
-!node_modules/sql.js/README.md

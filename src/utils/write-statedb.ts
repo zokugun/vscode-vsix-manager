@@ -5,7 +5,9 @@ import { err, OK, type Result } from '@zokugun/xtry';
 import initSqlJs from 'sql.js';
 
 export async function writeStateDB(userDataPath: string, query: string, args?: Record<string, any>): Promise<Result<void, string>> {
-	const sql = await initSqlJs();
+	const sql = await initSqlJs({
+		locateFile: () => require.resolve('sql.js/dist/sql-wasm.wasm'),
+	});
 	const databasePath = path.join(userDataPath, 'globalStorage', 'state.vscdb');
 
 	const buffer = await fse.readFile(databasePath);
