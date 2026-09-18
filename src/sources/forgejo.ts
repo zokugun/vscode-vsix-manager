@@ -1,12 +1,17 @@
 import process from 'process';
 import type { Forgejo } from '../types.js';
+import { Logger } from '../utils/logger.js';
 
 export function getReleasesUrl(extensionName: string, source: Forgejo): string { // {{{
 	if(source.owner) {
-		return `${source.serviceUrl}/repos/${source.owner}/${extensionName}/releases`;
+		const url = `${source.serviceUrl}/repos/${source.owner}/${extensionName}/releases`;
+		Logger.debug(`Resolved ForgeJo URL to ${url}`);
+		return url;
 	}
 	else {
-		return `${source.serviceUrl}/repos/${extensionName}/releases`;
+		const url = `${source.serviceUrl}/repos/${extensionName}/releases`;
+		Logger.debug(`Resolved ForgeJo URL to ${url}`);
+		return url;
 	}
 } // }}}
 

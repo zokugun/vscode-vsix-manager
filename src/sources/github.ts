@@ -1,13 +1,18 @@
 import process from 'process';
 import type { GitHub } from '../types.js';
+import { Logger } from '../utils/logger.js';
 
 export function getReleasesUrl(extensionName: string, source: GitHub | undefined): string { // {{{
 	const serviceUrl = source?.serviceUrl ?? 'https://api.github.com';
 	if(source?.owner) {
-		return `${serviceUrl}/repos/${source.owner}/${extensionName}/releases`;
+		const url = `${serviceUrl}/repos/${source.owner}/${extensionName}/releases`;
+		Logger.debug(`Resolved GitHub URL to ${url}`);
+		return url;
 	}
 	else {
-		return `${serviceUrl}/repos/${extensionName}/releases`;
+		const url = `${serviceUrl}/repos/${extensionName}/releases`;
+		Logger.debug(`Resolved GitHub URL to ${url}`);
+		return url;
 	}
 } // }}}
 

@@ -32,10 +32,17 @@ async function download(name: string, version: string, platform: string | undefi
 } // }}}
 
 async function findLatestAsset({ fullName: repoName, targetName, targetVersion }: Metadata, source: GitService | undefined, config: GitConfig): Promise<AssetInfo | typeof NO_ASSET> { // {{{
-	const releases = await got.get(config.getReleasesUrl(repoName, source), config.getHeaders(source)).json();
+	Logger.debug(`Finding latest asset for extension: ${repoName}`);
+	const releaseUrl = config.getReleasesUrl(repoName, source);
+	const requestHeaders = config.getHeaders(source);
+	const releases = await got.get(releaseUrl, requestHeaders).json();
 
 	if(!releases || !Array.isArray(releases)) {
+		Logger.debug(`Could not found assets from URL: ${releaseUrl}`);
 		return NO_ASSET;
+	}
+	else {
+		Logger.debug(`Succesfully found assets list at URL: ${releaseUrl}`);
 	}
 
 	let name: string = targetName ?? '';
@@ -167,7 +174,14 @@ async function findLatestAsset({ fullName: repoName, targetName, targetVersion }
 		}
 	}
 
-	return url ? { name, version, platform, url } : NO_ASSET;
+	if(url) {
+		Logger.debug(`Found asset:\n\tid\t\t\t${name}\n\tversion\t\t${version}\n\tplatform\t${platform}\n\turl\t\t\t${url}`);
+		return { name, version, platform, url };
+	}
+	else {
+		Logger.debug(`Asset for extension ${repoName} was not found.`);
+		return NO_ASSET;
+	}
 } // }}}
 
 export async function search(metadata: Metadata, source: GitService | undefined, config: GitConfig, temporaryDir: string): Promise<PartialSearchResult | undefined> { // {{{
