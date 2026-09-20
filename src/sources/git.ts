@@ -32,10 +32,19 @@ async function download(name: string, version: string, platform: string | undefi
 } // }}}
 
 async function findLatestAsset({ fullName: repoName, targetName, targetVersion }: Metadata, source: GitService | undefined, config: GitConfig): Promise<AssetInfo | typeof NO_ASSET> { // {{{
-	const releases = await got.get(config.getReleasesUrl(repoName, source), config.getHeaders(source)).json();
+	Logger.debug(`finding asset for extension:`, repoName, targetName, targetVersion);
+
+	const releaseUrl = config.getReleasesUrl(repoName, source);
+	const requestHeaders = config.getHeaders(source);
+	const releases = await got.get(releaseUrl, requestHeaders).json();
 
 	if(!releases || !Array.isArray(releases)) {
+		Logger.debug(`cannot find assets at URL:`, releaseUrl);
+
 		return NO_ASSET;
+	}
+	else {
+		Logger.debug(`found assets at URL:`, releaseUrl);
 	}
 
 	let name: string = targetName ?? '';
@@ -48,15 +57,23 @@ async function findLatestAsset({ fullName: repoName, targetName, targetVersion }
 			continue;
 		}
 
+		Logger.debug(`release name:`, release.name);
+
 		const match = /^v?(\d+\.\d+\.\d+)(?:-.*)?$/.exec(release.name as string);
 
 		if(match) {
+			const [, releaseVersion] = match;
+
+			Logger.debug(`release version:`, releaseVersion);
+
 			if(targetVersion) {
-				if(semver.eq(match[1], targetVersion)) {
+				if(semver.eq(releaseVersion, targetVersion)) {
 					for(const asset of release.assets) {
 						const result = parseAssetName(asset.name as string);
 
 						if(result) {
+							Logger.debug(`release asset:`, result);
+
 							if(result.platform && result.platform !== 'universal' && result.platform !== TARGET_PLATFORM) {
 								continue;
 							}
@@ -81,8 +98,6 @@ async function findLatestAsset({ fullName: repoName, targetName, targetVersion }
 				}
 			}
 
-			const releaseVersion = match[1];
-
 			if(version && semver.lte(releaseVersion, version)) {
 				continue;
 			}
@@ -91,6 +106,8 @@ async function findLatestAsset({ fullName: repoName, targetName, targetVersion }
 				const result = parseAssetName(asset.name as string);
 
 				if(result) {
+					Logger.debug(`release asset:`, result);
+
 					if(result.platform && result.platform !== 'universal' && result.platform !== TARGET_PLATFORM) {
 						continue;
 					}
@@ -120,6 +137,8 @@ async function findLatestAsset({ fullName: repoName, targetName, targetVersion }
 				const result = parseAssetName(asset.name as string);
 
 				if(result) {
+					Logger.debug(`release asset:`, result);
+
 					if(result.platform && result.platform !== 'universal' && result.platform !== TARGET_PLATFORM) {
 						continue;
 					}
@@ -167,7 +186,18 @@ async function findLatestAsset({ fullName: repoName, targetName, targetVersion }
 		}
 	}
 
-	return url ? { name, version, platform, url } : NO_ASSET;
+	if(url) {
+		const info = { name, version, platform, url };
+
+		Logger.debug(`found asset:`, info);
+
+		return info;
+	}
+	else {
+		Logger.debug(`cannot find asset for extension ${repoName}`);
+
+		return NO_ASSET;
+	}
 } // }}}
 
 export async function search(metadata: Metadata, source: GitService | undefined, config: GitConfig, temporaryDir: string): Promise<PartialSearchResult | undefined> { // {{{
