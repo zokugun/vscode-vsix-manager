@@ -59,7 +59,7 @@ async function findLatestAsset({ fullName: repoName, targetName, targetVersion }
 
 		Logger.debug(`release name:`, release.name);
 
-		const match = /^v?(\d+\.\d+\.\d+)(?:-.*)?$/.exec(release.name as string);
+		const match = /^v?(\d+\.\d+\.\d+)/.exec(release.name as string);
 
 		if(match) {
 			const [, releaseVersion] = match;
