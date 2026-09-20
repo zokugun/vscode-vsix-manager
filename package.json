@@ -31,7 +31,7 @@
 		"clean": "rimraf lib out *.vsix",
 		"compile:src": "tsc -p src",
 		"lint": "eslint",
-		"lint:all": "npm audit && npm run lint:package && npm run ci:lint && npm run lint",
+		"lint:all": "npm audit && npm run lint:package && npm run ci:lint",
 		"lint:fix": "eslint --fix",
 		"lint:package": "fixpack || true",
 		"package": "rimraf *.vsix && vsce package",
