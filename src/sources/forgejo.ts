@@ -5,12 +5,16 @@ import { Logger } from '../utils/logger.js';
 export function getReleasesUrl(extensionName: string, source: Forgejo): string { // {{{
 	if(source.owner) {
 		const url = `${source.serviceUrl}/repos/${source.owner}/${extensionName}/releases`;
-		Logger.debug(`Resolved ForgeJo URL to ${url}`);
+
+		Logger.debug(`resolved ForgeJo URL to ${url}`);
+
 		return url;
 	}
 	else {
 		const url = `${source.serviceUrl}/repos/${extensionName}/releases`;
-		Logger.debug(`Resolved ForgeJo URL to ${url}`);
+
+		Logger.debug(`resolved ForgeJo URL to ${url}`);
+
 		return url;
 	}
 } // }}}

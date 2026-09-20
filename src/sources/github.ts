@@ -4,14 +4,19 @@ import { Logger } from '../utils/logger.js';
 
 export function getReleasesUrl(extensionName: string, source: GitHub | undefined): string { // {{{
 	const serviceUrl = source?.serviceUrl ?? 'https://api.github.com';
+
 	if(source?.owner) {
 		const url = `${serviceUrl}/repos/${source.owner}/${extensionName}/releases`;
-		Logger.debug(`Resolved GitHub URL to ${url}`);
+
+		Logger.debug(`resolved GitHub URL to ${url}`);
+
 		return url;
 	}
 	else {
 		const url = `${serviceUrl}/repos/${extensionName}/releases`;
-		Logger.debug(`Resolved GitHub URL to ${url}`);
+
+		Logger.debug(`resolved GitHub URL to ${url}`);
+
 		return url;
 	}
 } // }}}
