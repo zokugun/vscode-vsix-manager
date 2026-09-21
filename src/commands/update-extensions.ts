@@ -46,20 +46,48 @@ export async function updateExtensions(): Promise<void> {
 }
 
 async function updateExtension(data: unknown, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, extensionManager: ExtensionManager): Promise<void> { // {{{
-	for(const extension of parseMetadata(data)) {
+	for(const metadata of parseMetadata(data)) {
 		try {
-			if(extension.kind === 'group') {
-				await updateGroup(extension, sources, groups, extensionManager);
+			if(metadata.kind === 'group') {
+				await updateGroup(metadata, sources, groups, extensionManager);
 			}
-			else if(extensionManager.hasInstalled(extension.fullName)) {
-				if(extension.source) {
-					await updateExtensionWithSource(extension, sources, groups, extensionManager);
+			else if(metadata.source) {
+				Logger.info(`updating extension: ${metadata.source}:${metadata.fullName}`);
+				Logger.debug(metadata);
+
+				if(metadata.targetVersion) {
+					Logger.info(`has specific version: ${metadata.targetVersion}`);
+					return;
+				}
+
+				if(!sources) {
+					Logger.info('no sources');
+					return;
+				}
+
+				const source = metadata.source === 'github' ? metadata.source : sources[metadata.source!];
+				if(!source) {
+					Logger.info(`source "${metadata.source!}" not found`);
+					return;
+				}
+
+				if(source === 'github' || source.type !== 'marketplace') {
+					await updateExtensionWithSource(metadata, source, sources, groups, extensionManager);
 				}
 				else {
-					// skip, managed by the editor
+					if(extensionManager.hasInstalled(metadata.fullName)) {
+						await updateExtensionWithSource(metadata, source, sources, groups, extensionManager);
+					}
+					else {
+						Logger.debug('skip, not installed');
+					}
 				}
 
 				return;
+			}
+			else {
+				Logger.debug('skip, managed by the editor');
+				Logger.debug(metadata);
 			}
 		}
 		catch (error: unknown) {
@@ -68,25 +96,7 @@ async function updateExtension(data: unknown, sources: Record<string, Source> | 
 	}
 } // }}}
 
-async function updateExtensionWithSource(metadata: Metadata, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, extensionManager: ExtensionManager): Promise<void> { // {{{
-	Logger.info(`updating extension: ${metadata.source!}:${metadata.fullName}`);
-
-	if(metadata.targetVersion) {
-		Logger.info(`has specific version: ${metadata.targetVersion}`);
-		return;
-	}
-
-	if(!sources) {
-		Logger.info('no sources');
-		return;
-	}
-
-	const source = metadata.source === 'github' ? metadata.source : sources[metadata.source!];
-	if(!source) {
-		Logger.info(`source "${metadata.source!}" not found`);
-		return;
-	}
-
+async function updateExtensionWithSource(metadata: Metadata, source: Source, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, extensionManager: ExtensionManager): Promise<void> { // {{{
 	let result: SearchResult | undefined;
 	let extensionName: string;
 
@@ -106,6 +116,7 @@ async function updateExtensionWithSource(metadata: Metadata, sources: Record<str
 	}
 
 	const currentVersion = extensionManager.getCurrentVersion(extensionName);
+
 	if(!currentVersion) {
 		Logger.info('not managed');
 		return;
@@ -140,12 +151,14 @@ async function updateExtensionWithSource(metadata: Metadata, sources: Record<str
 
 async function updateGroup(extension: Metadata, sources: Record<string, Source> | undefined, groups: Record<string, unknown[]> | undefined, extensionManager: ExtensionManager): Promise<void> { // {{{
 	Logger.info(`updating group: ${extension.fullName}`);
+
 	if(!groups) {
 		Logger.info('no groups');
 		return;
 	}
 
 	const extensions = groups[extension.fullName];
+
 	if(!extensions) {
 		Logger.info(`group "${extension.fullName}" not found`);
 		return;
