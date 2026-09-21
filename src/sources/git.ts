@@ -67,39 +67,14 @@ async function findLatestAsset({ fullName: repoName, targetName, targetVersion }
 			Logger.debug(`release version:`, releaseVersion);
 
 			if(targetVersion) {
-				if(semver.eq(releaseVersion, targetVersion)) {
-					for(const asset of release.assets) {
-						const result = parseAssetName(asset.name as string);
-
-						if(result) {
-							Logger.debug(`release asset:`, result);
-
-							if(result.platform && result.platform !== 'universal' && result.platform !== TARGET_PLATFORM) {
-								continue;
-							}
-
-							if(!name) {
-								name = result.name;
-								platform = result.platform;
-								url = config.getAssetUrl(asset);
-							}
-							else if(name === result.name) {
-								platform = result.platform;
-								url = config.getAssetUrl(asset);
-							}
-
-							if(url && Boolean(platform) && platform !== 'universal') {
-								break;
-							}
-						}
-					}
-
-					break;
+				if(!semver.eq(releaseVersion, targetVersion)) {
+					continue;
 				}
 			}
-
-			if(version && semver.lte(releaseVersion, version)) {
-				continue;
+			else if(version) {
+				if(semver.lte(releaseVersion, version)) {
+					continue;
+				}
 			}
 
 			for(const asset of release.assets) {
@@ -129,8 +104,6 @@ async function findLatestAsset({ fullName: repoName, targetName, targetVersion }
 					}
 				}
 			}
-
-			break;
 		}
 		else {
 			for(const asset of release.assets) {
