@@ -1,8 +1,11 @@
+import type { Result } from '@zokugun/xtry';
+import type vscode from 'vscode';
+
 import path from 'path';
 import { platform, arch } from 'process';
 import fse from '@zokugun/fs-extra-plus/async';
-import { err, OK, type Result } from '@zokugun/xtry';
-import type vscode from 'vscode';
+import { err, OK } from '@zokugun/xtry';
+import { ExtensionKind } from 'vscode';
 
 export const CONFIG_KEY = 'vsix';
 export const TARGET_PLATFORM = `${platform}-${arch}` as const;
@@ -11,6 +14,7 @@ export const TARGET_PLATFORM = `${platform}-${arch}` as const;
 export let EXTENSION_ID: string = '';
 export let EXTENSION_NAME: string = '';
 export let GLOBAL_STORAGE: string = '';
+export let IS_REMOTE: boolean = false;
 export let TEMPORARY_DIR: string = '';
 export let WORKSPACE_STORAGE: string | undefined;
 /* eslint-enable */
@@ -25,6 +29,7 @@ export async function setupSettings(context: vscode.ExtensionContext): Promise<R
 	EXTENSION_NAME = context.extension.packageJSON.displayName as string;
 	EXTENSION_ID = context.extension.id;
 	GLOBAL_STORAGE = context.globalStorageUri.fsPath;
+	IS_REMOTE = context.extension.extensionKind === ExtensionKind.Workspace;
 	TEMPORARY_DIR = path.join(GLOBAL_STORAGE, 'temp');
 	WORKSPACE_STORAGE = context.storageUri?.fsPath;
 
