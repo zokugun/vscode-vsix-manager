@@ -18,7 +18,7 @@
 		"url": "https://github.com/zokugun/vscode-vsix-manager/discussions/categories/issue-triage"
 	},
 	"engines": {
-		"vscode": "^1.56.0"
+		"vscode": "^1.63.0"
 	},
 	"main": "./lib/index.js",
 	"browser": "./lib/index.js",
@@ -60,7 +60,7 @@
 		"@types/node": "20.19.43",
 		"@types/semver": "7.7.1",
 		"@types/sql.js": "1.4.11",
-		"@types/vscode": "1.56.0",
+		"@types/vscode": "1.63.0",
 		"@vercel/ncc": "0.44.0",
 		"@vscode/vsce": "3.9.2",
 		"@zokugun/eslint-config": "0.2.1",
@@ -94,9 +94,6 @@
 		"keytar": true,
 		"unrs-resolver": true
 	},
-	"extensionDependencies": [
-		"zokugun.cron-tasks"
-	],
 	"activationEvents": [
 		"onStartupFinished",
 		"onCommand:vsix.installExtensions",
