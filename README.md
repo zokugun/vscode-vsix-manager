@@ -307,6 +307,21 @@ Commands
 Crons
 -----
 
+> [!WARNING]
+>
+> `vsix.crons` has been deprecated.
+>
+> Use `cronTasks.tasks` setting from the `zokugun.cron-tasks` extension
+>
+> ```jsonc
+> "cronTasks.tasks": [
+>    {
+>       "at": "0 12 * * *",
+>       "run": "vsix.update",
+>    },
+> ],
+> ```
+
 `vsix.crons` allows you to schedule the `update` command.
 
 ```jsonc

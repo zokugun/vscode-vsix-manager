@@ -79,11 +79,11 @@ export async function activate(context: vscode.ExtensionContext): Promise<VSIXMa
 		vscode.commands.registerCommand('vsix.updateExtensions', updateExtensions),
 	);
 
-	await setupCrons();
+	await setupCrons(context);
 
 	vscode.workspace.onDidChangeConfiguration(async (event) => {
 		if(event.affectsConfiguration('vsix.crons')) {
-			await setupCrons();
+			await setupCrons(context);
 		}
 	});
 
