@@ -2,4 +2,5 @@
 /lib/
 /out/
 /.vscode-test/
+/vscode*.d.ts
 /*.vsix

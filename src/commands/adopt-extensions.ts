@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { ExtensionManager } from '../extensions/extension-manager.js';
 import { listExtensions } from '../extensions/list-extensions.js';
 import { type ExtensionList, type Metadata, type Source } from '../types.js';
+import { getExtensions } from '../utils/get-extensions.js';
 import { Logger } from '../utils/logger.js';
 import { parseMetadata } from '../utils/parse-metadata.js';
 import { CONFIG_KEY, EXTENSION_ID } from '../utils/settings.js';
@@ -13,7 +14,7 @@ export async function adoptExtensions(): Promise<void> {
 
 	Logger.setup(true);
 
-	const extensions = config.get<unknown[]>('extensions');
+	const extensions = getExtensions(config);
 	if(!extensions) {
 		return;
 	}

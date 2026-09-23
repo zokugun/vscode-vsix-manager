@@ -296,6 +296,39 @@ You can use the `throttle` property to limit the number of requests to a source.
 },
 ```
 
+Remote Host
+-----------
+
+To manage the extensions of a remote host, you need the follwoing settings:
+
+```jsonc
+"remote.extensionKind": {
+    "zokugun.vsix-manager": [
+        "workspace",
+    ],
+},
+```
+
+Then, it will use the `vsix.extensions` list.
+
+If you want specific extensions for your hosts, uses:
+
+```jsonc
+"vsix.remote.enabled": true,
+"vsix.remote.extensions": {
+    "linux": [
+        "devX.extX",
+        "devX.extY",
+        "devY.extX",
+    ],
+    "wsl-server": [
+        "devW.extX",
+        "devW.extY",
+        "devY.extX",
+    ],
+},
+```
+
 Commands
 --------
 
