@@ -25,7 +25,7 @@
 	"scripts": {
 		"audit:fix": "npm audit fix --min-release-age=0",
 		"build": "npm run clean && npm run compile:src && npm run bundle",
-		"bundle": "ncc build out/extension --out lib --external sql.js",
+		"bundle": "ncc build out/extension --out lib",
 		"ci:lint": "zizmor .",
 		"ci:lint:fix": "zizmor . --fix=all",
 		"clean": "rimraf lib out *.vsix",
@@ -34,7 +34,7 @@
 		"lint:all": "npm audit && npm run lint:package && npm run ci:lint",
 		"lint:fix": "eslint --fix",
 		"lint:package": "fixpack || true",
-		"package": "rimraf *.vsix && vsce package",
+		"package": "rimraf *.vsix && vsce package --no-dependencies",
 		"prepare": "husky; npm run lint:package",
 		"release": "release-it",
 		"update:artifacts": "artifact update",
@@ -361,7 +361,6 @@
 		"vsix"
 	],
 	"extensionKind": [
-		"ui",
 		"workspace"
 	]
 }
