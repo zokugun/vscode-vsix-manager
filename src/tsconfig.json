@@ -8,6 +8,13 @@
 		/* Module Resolution Options */
 		"resolveJsonModule": true,						/* Enable importing .json files */
 	},
+	"files": [
+		"../vscode.d.ts",
+		"../vscode.proposed.resolvers.d.ts",
+	],
+	"include": [
+		"**/*.ts",
+	],
 	"references": [
 		{
 			"path": ".."

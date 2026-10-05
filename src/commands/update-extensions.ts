@@ -4,6 +4,7 @@ import { ExtensionManager } from '../extensions/extension-manager.js';
 import { installIntoEditor } from '../extensions/install-into-editor.js';
 import { confirmRestartMessage } from '../modals/confirm-restart-message.js';
 import type { Metadata, RestartMode, SearchResult, Source } from '../types.js';
+import { getExtensions } from '../utils/get-extensions.js';
 import { Logger } from '../utils/logger.js';
 import { parseMetadata } from '../utils/parse-metadata.js';
 import { search } from '../utils/search.js';
@@ -18,7 +19,7 @@ export async function updateExtensions(): Promise<void> {
 
 	Logger.setup(true);
 
-	const extensions = config.get<unknown[]>('extensions');
+	const extensions = getExtensions(config);
 	if(!extensions) {
 		return;
 	}

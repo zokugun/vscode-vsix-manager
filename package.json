@@ -30,11 +30,13 @@
 		"ci:lint:fix": "zizmor . --fix=all",
 		"clean": "rimraf lib out *.vsix",
 		"compile:src": "tsc -p src",
+		"download:types": "npx vscode-dts dev 1.63.0 && npx vscode-dts 1.63.0",
 		"lint": "eslint",
 		"lint:all": "npm audit && npm run lint:package && npm run ci:lint",
 		"lint:fix": "eslint --fix",
 		"lint:package": "fixpack || true",
 		"package": "rimraf *.vsix && vsce package",
+		"postinstall": "npm run download:types",
 		"prepare": "husky; npm run lint:package",
 		"release": "release-it",
 		"update:artifacts": "artifact update",
@@ -60,7 +62,6 @@
 		"@types/node": "20.19.43",
 		"@types/semver": "7.7.1",
 		"@types/sql.js": "1.4.11",
-		"@types/vscode": "1.63.0",
 		"@vercel/ncc": "0.44.0",
 		"@vscode/vsce": "3.9.2",
 		"@zokugun/eslint-config": "0.2.1",
@@ -134,11 +135,11 @@
 			"properties": {
 				"vsix.crons": {
 					"type": "object",
-					"description": "Automate some commands",
+					"description": "Automate some commands.",
 					"properties": {
 						"update": {
 							"type": "string",
-							"description": "Automatically update the extensions at the specified time",
+							"description": "Automatically update the extensions at the specified time.",
 							"default": ""
 						}
 					},
@@ -150,7 +151,7 @@
 				},
 				"vsix.debug": {
 					"type": "boolean",
-					"description": "Output debug logs",
+					"description": "Output debug logs.",
 					"default": false,
 					"scope": "application",
 					"tags": [
@@ -159,7 +160,7 @@
 				},
 				"vsix.extensions": {
 					"type": "array",
-					"description": "List of extension IDs or groups to install",
+					"description": "List of extension IDs or groups to install.",
 					"items": [
 						{
 							"type": "string"
@@ -197,11 +198,11 @@
 				},
 				"vsix.groups": {
 					"type": "object",
-					"description": "Map of groups",
+					"description": "Map of groups.",
 					"items": [
 						{
 							"type": "array",
-							"description": "List of extension IDs or groups to install",
+							"description": "List of extension IDs or groups to install.",
 							"items": [
 								{
 									"type": "string"
@@ -241,7 +242,7 @@
 				},
 				"vsix.notification": {
 					"type": "string",
-					"description": "Display notification when a new version is installed",
+					"description": "Display notification when a new version is installed.",
 					"default": "minor",
 					"enum": [
 						"none",
@@ -260,6 +261,59 @@
 						"vsix"
 					]
 				},
+				"vsix.remote.enabled": {
+					"type": "boolean",
+					"description": "When enabled, the manager will the the remote lists to install the extensions.",
+					"default": false,
+					"scope": "application",
+					"tags": [
+						"remote",
+						"vsix"
+					]
+				},
+				"vsix.remote.extensions": {
+					"type": "object",
+					"description": "A map of the remote hostname to the extensions for that remote.",
+					"scope": "application",
+					"default": {},
+					"additionalProperties": {
+						"type": "array",
+						"description": "List of extension IDs or groups for the remote.",
+						"items": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"properties": {
+									"id": {
+										"type": [
+											"string",
+											"array"
+										]
+									},
+									"enabled": {
+										"type": "boolean",
+										"default": true
+									}
+								}
+							},
+							{
+								"type": "array",
+								"items": [
+									{
+										"type": "string"
+									}
+								]
+							}
+						],
+						"uniqueItems": true
+					},
+					"tags": [
+						"remote",
+						"vsix"
+					]
+				},
 				"vsix.restart.confirm": {
 					"type": "boolean",
 					"description": "Confirm with the user that the editor might restart or reload.",
@@ -271,7 +325,7 @@
 				},
 				"vsix.restart.mode": {
 					"type": "string",
-					"description": "Select how to restart the extension host (only for advanced users, should be left on 'auto')",
+					"description": "Select how to restart the extension host (only for advanced users, should be left on 'auto').",
 					"default": "auto",
 					"enum": [
 						"auto",
@@ -359,6 +413,9 @@
 		"extension",
 		"marketplace",
 		"vsix"
+	],
+	"enabledApiProposals": [
+		"resolvers"
 	],
 	"extensionKind": [
 		"ui",
