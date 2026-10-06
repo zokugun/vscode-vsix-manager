@@ -23,6 +23,7 @@
 	"main": "./lib/index.js",
 	"browser": "./lib/index.js",
 	"scripts": {
+		"audit": "better-npm-audit audit",
 		"audit:fix": "npm audit fix --min-release-age=0",
 		"build": "npm run clean && npm run compile:src && npm run bundle",
 		"bundle": "ncc build out/extension --out lib --external sql.js",
@@ -32,7 +33,7 @@
 		"compile:src": "tsc -p src",
 		"download:types": "npx vscode-dts dev 1.63.0 && npx vscode-dts 1.63.0",
 		"lint": "eslint",
-		"lint:all": "npm audit && npm run lint:package && npm run ci:lint",
+		"lint:all": "npm run audit && npm run lint:package && npm run ci:lint",
 		"lint:fix": "eslint --fix",
 		"lint:package": "fixpack || true",
 		"package": "rimraf *.vsix && vsce package",
@@ -72,6 +73,7 @@
 		"@zokugun/eslint-config-nodejs": "0.2.0",
 		"@zokugun/eslint-config-style": "0.3.1",
 		"@zokugun/eslint-config-ts": "0.3.2",
+		"better-npm-audit": "3.11.0",
 		"eslint": "10.9.0",
 		"fixpack": "4.0.0",
 		"husky": "9.1.7",
@@ -86,8 +88,20 @@
 		"@octokit/request": {
 			"content-type": "2.1.0"
 		},
+		"ajv": {
+			"fast-uri": "3.1.8"
+		},
+		"get-uri": {
+			"basic-ftp": "6.2.1"
+		},
+		"minimatch": {
+			"brace-expansion": "5.0.12"
+		},
 		"release-it": {
-			"undici": "7.29.0"
+			"undici": "7.29.1"
+		},
+		"socks": {
+			"ip-address": "10.7.1"
 		}
 	},
 	"allowScripts": {
