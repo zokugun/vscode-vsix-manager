@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.13.0 | 2026-10-06
+- add extension list per remote host with `vsix.remote.extensions`
+- deprecate crons
+- correctly detect the version of a release in GitHub/ForgeJo
+- add debug logging for GitHub and ForgeJo, thanks to **@Aevarkan**
+
 ## v0.12.0 | 2026-04-06
 - remove the support for the deprecated `vsix.sources/kind` property
 - read extension identifier from the zip file if it's not available in the expression (might happened with file or git sources)
